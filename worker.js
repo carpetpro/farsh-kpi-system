@@ -14,7 +14,15 @@ export default {
     }
 
     try {
-      // ۱. مدیریت پروژه‌های بهبود
+      // ۱. سرو کردن فایل‌های استاتیک یا درخواست‌های وب
+      if (env.ASSETS) {
+        const assetResponse = await env.ASSETS.fetch(request);
+        if (assetResponse.status !== 404) {
+          return assetResponse;
+        }
+      }
+
+      // ۲. مدیریت پروژه‌های بهبود
       if (path === '/api/projects' && request.method === 'GET') {
         const { results } = await env.DB.prepare('SELECT * FROM biz_projects ORDER BY id DESC').all();
         return Response.json(results || [], { headers: corsHeaders });
@@ -33,7 +41,7 @@ export default {
         return Response.json({ success: true }, { headers: corsHeaders });
       }
 
-      // ۲. مدیریت شاخص‌های کلیدی (KPIs)
+      // ۳. مدیریت شاخص‌های کلیدی (KPIs)
       if (path === '/api/kpis' && request.method === 'GET') {
         const { results } = await env.DB.prepare('SELECT * FROM biz_kpis ORDER BY id DESC').all();
         return Response.json(results || [], { headers: corsHeaders });
@@ -52,7 +60,7 @@ export default {
         return Response.json({ success: true }, { headers: corsHeaders });
       }
 
-      // ۳. مدیریت عارضه‌ها و فرصت‌ها
+      // ۴. مدیریت عارضه‌ها و فرصت‌ها
       if (path === '/api/issues' && request.method === 'GET') {
         const { results } = await env.DB.prepare('SELECT * FROM biz_issues ORDER BY id DESC').all();
         return Response.json(results || [], { headers: corsHeaders });
@@ -71,12 +79,7 @@ export default {
         return Response.json({ success: true }, { headers: corsHeaders });
       }
 
-      // سرو کردن فایل‌های استاتیک (index.html)
-      if (env.ASSETS) {
-        return await env.ASSETS.fetch(request);
-      }
-
-      return new Response('ارتباط با فایل‌ها برقرار نشد', { status: 404 });
+      return new Response('ارتباط با فایل‌ها برقرار نشد. لطفاً از وجود index.html مطمئن شوید.', { status: 404 });
 
     } catch (error) {
       return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
