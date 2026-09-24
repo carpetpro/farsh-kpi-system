@@ -5,187 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستم KPI فرش</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; direction: rtl; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+        h2 { margin-bottom: 20px; color: #333; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #218838; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-danger:hover { background-color: #c82333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background-color: #f8f9fa; }
-        .hidden { display: none !important; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .error { color: red; margin-top: 10px; font-size: 0.9em; }
+        .error-msg { color: red; margin-top: 15px; font-size: 13px; display: none; }
+        .dashboard { display: none; width: 90%; max-width: 800px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .dashboard h1 { margin-bottom: 20px; color: #007bff; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- بخش ۱: فرم ورود -->
-    <div id="loginSection">
+    <!-- فرم ورود -->
+    <div id="login-section" class="login-card">
         <h2>ورود به سیستم KPI فرش</h2>
         <form id="loginForm">
             <div class="form-group">
                 <label>نام کاربری:</label>
-                <input type="text" id="username" placeholder="مثلا: admin" required>
+                <input type="text" id="username" required>
             </div>
             <div class="form-group">
                 <label>رمز عبور:</label>
-                <input type="password" id="password" placeholder="مثلا: 123456" required>
+                <input type="password" id="password" required>
             </div>
             <button type="submit">ورود</button>
-            <p id="loginError" class="error hidden"></p>
         </form>
+        <div id="error" class="error-msg">نام کاربری یا رمز عبور اشتباه است.</div>
     </div>
 
-    <!-- بخش ۲: داشبورد اصلی KPI (در ابتدا مخفی است) -->
-    <div id="dashboardSection" class="hidden">
-        <div class="header-bar">
-            <h2>داشبورد شاخص‌های کلیدی عملکرد</h2>
-            <button id="logoutBtn" class="btn-danger" style="width: auto; padding: 8px 15px;">خروج</button>
-        </div>
-
-        <form id="kpiForm">
-            <div class="form-group"><label>عنوان شاخص:</label><input type="text" id="title" required></div>
-            <div class="form-group"><label>دسته‌بندی:</label><input type="text" id="category" placeholder="مثلا: فروش، تولید"></div>
-            <div class="form-group"><label>مقدار:</label><input type="number" step="any" id="value" required></div>
-            <div class="form-group"><label>واحد:</label><input type="text" id="unit" placeholder="مثلا: تخته، تومان"></div>
-            <div class="form-group"><label>تاریخ ثبت:</label><input type="date" id="recorded_date" required></div>
-            <button type="submit">ثبت شاخص</button>
-        </form>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>عنوان</th>
-                    <th>دسته‌بندی</th>
-                    <th>مقدار</th>
-                    <th>تاریخ</th>
-                    <th>عملیات</th>
-                </tr>
-            </thead>
-            <tbody id="kpiTableBody"></tbody>
-        </table>
+    <!-- صفحه داشبورد پس از ورود -->
+    <div id="dashboard-section" class="dashboard">
+        <h1>داشبورد مدیریت KPI فرش</h1>
+        <p>خوش آمدید! ورود شما با موفقیت انجام شد.</p>
+        <button onclick="logout()" style="width: auto; padding: 8px 15px; background-color: #dc3545; margin-top: 20px;">خروج</button>
     </div>
-</div>
 
-<script>
-    const loginSection = document.getElementById('loginSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const kpiForm = document.getElementById('kpiForm');
-    const kpiTableBody = document.getElementById('kpiTableBody');
-
-    // بررسی حالت ورود
-    function checkAuth() {
-        const token = localStorage.getItem('kpi_token');
-        if (token) {
-            loginSection.classList.add('hidden');
-            dashboardSection.classList.remove('hidden');
-            loadKPIs();
-        } else {
-            loginSection.classList.remove('hidden');
-            dashboardSection.classList.add('hidden');
+    <script>
+        // بررسی لاگین بودن قبلی
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            showDashboard();
         }
-    }
 
-    // ورود به سیستم
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loginError.classList.add('hidden');
-        
-        try {
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: document.getElementById('username').value,
-                    password: document.getElementById('password').value
-                })
-            });
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const un = document.getElementById('username').value.trim();
+            const pw = document.getElementById('password').value.trim();
+            const errDiv = document.getElementById('error');
 
-            const data = await res.json();
-            if (data.success) {
-                localStorage.setItem('kpi_token', data.token);
-                checkAuth();
+            // بررسی یوزر و پسورد به‌صورت مستقیم در فرانت‌‌اند
+            if (un === 'admin' && pw === '123456') {
+                localStorage.setItem('isLoggedIn', 'true');
+                errDiv.style.display = 'none';
+                showDashboard();
             } else {
-                loginError.textContent = data.message || 'خطا در ورود';
-                loginError.classList.remove('hidden');
+                errDiv.innerText = 'نام کاربری یا رمز عبور اشتباه است.';
+                errDiv.style.display = 'block';
             }
-        } catch (err) {
-            loginError.textContent = 'ارتباط با سرور برقرار نشد.';
-            loginError.classList.remove('hidden');
-        }
-    });
-
-    // خروج از سیستم
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('kpi_token');
-        checkAuth();
-    });
-
-    // بارگذاری لیست KPI ها
-    async function loadKPIs() {
-        try {
-            const res = await fetch('/api/kpis');
-            const kpis = await res.json();
-            kpiTableBody.innerHTML = '';
-            if (Array.isArray(kpis)) {
-                kpis.forEach(item => {
-                    kpiTableBody.innerHTML += `
-                        <tr>
-                            <td>${item.title}</td>
-                            <td>${item.category || '-'}</td>
-                            <td>${item.value} ${item.unit || ''}</td>
-                            <td>${item.recorded_date}</td>
-                            <td><button class="btn-danger" onclick="deleteKPI(${item.id})" style="padding: 5px 10px;">حذف</button></td>
-                        </tr>
-                    `;
-                });
-            }
-        } catch (e) {
-            console.error('خطا در دریافت لیست:', e);
-        }
-    }
-
-    // ثبت KPI جدید
-    kpiForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            title: document.getElementById('title').value,
-            category: document.getElementById('category').value,
-            value: parseFloat(document.getElementById('value').value),
-            unit: document.getElementById('unit').value,
-            recorded_date: document.getElementById('recorded_date').value
-        };
-
-        await fetch('/api/kpis', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
         });
 
-        kpiForm.reset();
-        loadKPIs();
-    });
-
-    // حذف KPI
-    async function deleteKPI(id) {
-        if (confirm('آیا از حذف این مورد مطمئن هستید؟')) {
-            await fetch(`/api/kpis/${id}`, { method: 'DELETE' });
-            loadKPIs();
+        function showDashboard() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dashboard-section').style.display = 'block';
         }
-    }
 
-    // اجرای اولیه
-    checkAuth();
-</script>
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+    </script>
 </body>
 </html>
