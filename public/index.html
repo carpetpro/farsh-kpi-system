@@ -28,8 +28,8 @@
         .roadmap-badge { background: #3b82f6; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
 
         /* تب‌ها (Nav Tabs) */
-        .nav-tabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 30px; gap: 10px; }
-        .tab-btn { padding: 14px 20px; border: none; background: none; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-tabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 30px; gap: 10px; overflow-x: auto; }
+        .tab-btn { padding: 14px 20px; border: none; background: none; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
         .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
         /* محتوای صفحات */
@@ -287,7 +287,7 @@
         function showDashboard() {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dashboard-section').style.display = 'block';
-            renderAll();
+            loadAllData();
         }
 
         function logout() {
@@ -303,112 +303,125 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // --- مدیریت داده‌ها در Storage ---
-        const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
-        const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
+        // --- دریافت و ذخیره داده‌ها از دیتابیس ابری D1 کلادفلر ---
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch('/api/' + endpoint, options);
+            return await res.json();
+        }
 
-        // ثبت پروژه جدید
-        document.getElementById('projectForm').addEventListener('submit', function(e) {
+        let globalProjects = [], globalKpis = [], globalIssues = [];
+
+        async function loadAllData() {
+            try {
+                globalProjects = await fetchAPI('projects');
+                globalKpis = await fetchAPI('kpis');
+                globalIssues = await fetchAPI('issues');
+                renderAll();
+            } catch (err) {
+                console.error("خطا در دریافت داده‌ها:", err);
+            }
+        }
+
+        // ثبت پروژه جدید در دیتابیس D1
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const list = getData('biz_projects');
-            list.unshift({
-                id: Date.now(),
+            const newProj = {
+                id: Date.now().toString(),
                 title: document.getElementById('projTitle').value,
                 owner: document.getElementById('projOwner').value,
                 progress: parseInt(document.getElementById('projProgress').value),
                 status: document.getElementById('projStatus').value
-            });
-            saveData('biz_projects', list);
+            };
+            await fetchAPI('projects', 'POST', newProj);
             this.reset();
+            loadAllData();
         });
 
-        // ثبت KPI جدید
-        document.getElementById('kpiForm').addEventListener('submit', function(e) {
+        // ثبت KPI جدید در دیتابیس D1
+        document.getElementById('kpiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const list = getData('biz_kpis');
-            list.unshift({
-                id: Date.now(),
+            const newKpi = {
+                id: Date.now().toString(),
                 title: document.getElementById('kpiTitle').value,
                 category: document.getElementById('kpiCategory').value,
                 value: parseFloat(document.getElementById('kpiValue').value),
                 unit: document.getElementById('kpiUnit').value
-            });
-            saveData('biz_kpis', list);
+            };
+            await fetchAPI('kpis', 'POST', newKpi);
             this.reset();
+            loadAllData();
         });
 
-        // ثبت عارضه جدید
-        document.getElementById('issueForm').addEventListener('submit', function(e) {
+        // ثبت عارضه جدید در دیتابیس D1
+        document.getElementById('issueForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const list = getData('biz_issues');
-            list.unshift({
-                id: Date.now(),
+            const newIssue = {
+                id: Date.now().toString(),
                 title: document.getElementById('issueTitle').value,
                 priority: document.getElementById('issuePriority').value
-            });
-            saveData('biz_issues', list);
+            };
+            await fetchAPI('issues', 'POST', newIssue);
             this.reset();
+            loadAllData();
         });
 
-        // حذف آیتم‌ها
-        function deleteItem(key, id) {
-            saveData(key, getData(key).filter(i => i.id !== id));
+        // حذف از دیتابیس D1
+        async function deleteItem(endpoint, id) {
+            await fetchAPI(`${endpoint}/${id}`, 'DELETE');
+            loadAllData();
         }
 
-        // رندر و بروزرسانی نمایش داده‌ها و نمودارها
+        // نمایش داده‌ها و رسم نمودارها
         let chart1, chart2;
         function renderAll() {
-            const projects = getData('biz_projects');
-            const kpis = getData('biz_kpis');
-            const issues = getData('biz_issues');
-
             // ۱. جدول پروژه‌ها
-            document.getElementById('projectsTable').innerHTML = projects.map(p => `
+            document.getElementById('projectsTable').innerHTML = globalProjects.map(p => `
                 <tr>
                     <td><b>${p.title}</b></td>
                     <td>${p.owner}</td>
                     <td>${p.progress}%</td>
                     <td><span class="badge ${p.status === 'تکمیل شده' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td>
-                    <td><button onclick="deleteItem('biz_projects', ${p.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
+                    <td><button onclick="deleteItem('projects', '${p.id}')" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
                 </tr>
             `).join('');
 
             // ۲. جدول KPI
-            document.getElementById('kpiTable').innerHTML = kpis.map(k => `
+            document.getElementById('kpiTable').innerHTML = globalKpis.map(k => `
                 <tr>
                     <td><b>${k.title}</b></td>
                     <td>${k.category}</td>
-                    <td>${k.value.toLocaleString()}</td>
+                    <td>${Number(k.value).toLocaleString()}</td>
                     <td>${k.unit}</td>
-                    <td><button onclick="deleteItem('biz_kpis', ${k.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
+                    <td><button onclick="deleteItem('kpis', '${k.id}')" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
                 </tr>
             `).join('');
 
             // ۳. جدول عارضه‌ها
-            document.getElementById('issuesTable').innerHTML = issues.map(i => `
+            document.getElementById('issuesTable').innerHTML = globalIssues.map(i => `
                 <tr>
                     <td>${i.title}</td>
                     <td><span class="badge ${i.priority === 'بالا' ? 'badge-danger' : 'badge-warning'}">${i.priority}</span></td>
-                    <td><button onclick="deleteItem('biz_issues', ${i.id})" style="color:red; border:none; background:none; cursor:pointer;">رفع شد / حذف</button></td>
+                    <td><button onclick="deleteItem('issues', '${i.id}')" style="color:red; border:none; background:none; cursor:pointer;">رفع شد / حذف</button></td>
                 </tr>
             `).join('');
 
             // ۴. کارت‌های آمار
-            document.getElementById('stat-total-projects').innerText = projects.length;
-            const avgProgress = projects.length ? Math.round(projects.reduce((a,b) => a + b.progress, 0) / projects.length) : 0;
+            document.getElementById('stat-total-projects').innerText = globalProjects.length;
+            const avgProgress = globalProjects.length ? Math.round(globalProjects.reduce((a,b) => a + Number(b.progress), 0) / globalProjects.length) : 0;
             document.getElementById('stat-avg-progress').innerText = avgProgress + '%';
-            document.getElementById('stat-active-issues').innerText = issues.length;
-            document.getElementById('stat-total-kpis').innerText = kpis.length;
+            document.getElementById('stat-active-issues').innerText = globalIssues.length;
+            document.getElementById('stat-total-kpis').innerText = globalKpis.length;
 
             // ۵. رسم نمودارها
-            renderCharts(kpis, projects);
+            renderCharts(globalKpis, globalProjects);
         }
 
         function renderCharts(kpis, projects) {
             if (chart1) chart1.destroy();
             if (chart2) chart2.destroy();
 
-            // نمودار ۱: مقادیر KPI
             const ctx1 = document.getElementById('kpiChart').getContext('2d');
             chart1 = new Chart(ctx1, {
                 type: 'bar',
@@ -419,7 +432,6 @@
                 options: { responsive: true }
             });
 
-            // نمودار ۲: پیشرفت پروژه‌ها
             const ctx2 = document.getElementById('projectsChart').getContext('2d');
             chart2 = new Chart(ctx2, {
                 type: 'doughnut',
