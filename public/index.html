@@ -3,46 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستم مدیریت KPI فرش</title>
+    <title>سامانه جامع پایش و تحول کسب‌وکار</title>
+    <!-- Chart.js برای رسم نمودارهای مدیریتی -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Vazir, sans-serif; }
-        body { background-color: #f0f2f5; color: #333; }
+        body { background-color: #f8fafc; color: #1e293b; }
         
         /* بخش ورود */
-        .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 380px; text-align: center; }
-        .login-card h2 { margin-bottom: 20px; color: #1a365d; }
+        .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; }
+        .login-card { background: white; padding: 35px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-card h2 { margin-bottom: 8px; color: #0f172a; font-size: 20px; }
+        .login-card p { font-size: 13px; color: #64748b; margin-bottom: 25px; }
         .form-group { margin-bottom: 15px; text-align: right; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
-        .btn { width: 100%; padding: 10px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 13px; color: #475569; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        .btn { width: 100%; padding: 11px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn:hover { background-color: #1d4ed8; }
         .btn-danger { background-color: #ef4444; }
-        .btn-danger:hover { background-color: #dc2626; }
-        .error-msg { color: #dc2626; margin-top: 15px; font-size: 13px; display: none; }
-
-        /* بخش داشبورد */
-        #dashboard-section { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        header h1 { font-size: 20px; color: #1e293b; }
         
+        /* هدر اصلی */
+        header { background: #1e293b; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .roadmap-badge { background: #3b82f6; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
+
+        /* تب‌ها (Nav Tabs) */
+        .nav-tabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 30px; gap: 10px; }
+        .tab-btn { padding: 14px 20px; border: none; background: none; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+        /* محتوای صفحات */
+        .container { padding: 30px; max-width: 1300px; margin: 0 auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         /* کارت‌های آماری */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: right; border-right: 4px solid #2563eb; }
-        .stat-card h3 { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: right; border-right: 4px solid #2563eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-card h3 { font-size: 12px; color: #64748b; margin-bottom: 8px; }
         .stat-card .value { font-size: 22px; font-weight: bold; color: #0f172a; }
 
-        /* فرم ثبت و جدول */
-        .main-content { display: grid; grid-template-columns: 300px 1fr; gap: 25px; }
-        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+        /* چیدمان شبکه‌ای */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
         
-        .panel { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .panel h3 { margin-bottom: 15px; font-size: 16px; color: #334155; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: right; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background-color: #f8fafc; color: #475569; }
-        .action-btn { padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .panel { background: white; padding: 22px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .panel h3 { font-size: 16px; color: #0f172a; margin-bottom: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* جداول */
+        table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        th { background-color: #f8fafc; color: #475569; font-weight: bold; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef3c7; color: #b45309; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
     </style>
 </head>
 <body>
@@ -50,124 +65,229 @@
     <!-- فرم ورود -->
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
-            <h2>ورود به سیستم KPI فرش</h2>
+            <h2>داشبورد تحول کسب‌وکار</h2>
+            <p>سامانه پایش عملکرد و پروژه‌های بهبود</p>
             <form id="loginForm">
                 <div class="form-group">
                     <label>نام کاربری:</label>
-                    <input type="text" id="username" required placeholder="admin">
+                    <input type="text" id="username" placeholder="admin" required>
                 </div>
                 <div class="form-group">
                     <label>رمز عبور:</label>
-                    <input type="password" id="password" required placeholder="123456">
+                    <input type="password" id="password" placeholder="123456" required>
                 </div>
-                <button type="submit" class="btn">ورود به سیستم</button>
+                <button type="submit" class="btn">ورود به اتاق فرمان</button>
             </form>
-            <div id="error" class="error-msg">نام کاربری یا رمز عبور اشتباه است.</div>
         </div>
     </div>
 
-    <!-- داشبورد مدیریت KPI -->
-    <div id="dashboard-section">
+    <!-- پنل اصلی -->
+    <div id="dashboard-section" style="display: none;">
         <header>
-            <h1>داشبورد شاخص‌های کلیدی عملکرد (KPI) تولید و فروش فرش</h1>
-            <button onclick="logout()" class="btn btn-danger" style="width: auto; padding: 8px 16px;">خروج</button>
+            <h1>
+                سامانه پایش و تحول کسب‌وکار
+                <span class="roadmap-badge">پروژه بهبود (مرحله ۰۸)</span>
+            </h1>
+            <button onclick="logout()" class="btn btn-danger" style="width: auto; padding: 6px 15px; font-size: 13px;">خروج</button>
         </header>
 
-        <!-- کارت‌های آمار سریع -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>کل شاخص‌های ثبت‌شده</h3>
-                <div class="value" id="total-kpis">0</div>
-            </div>
-            <div class="stat-card" style="border-color: #10b981;">
-                <h3>مجموع متراژ تولیدی</h3>
-                <div class="value" id="total-production">0 متر مربع</div>
-            </div>
-            <div class="stat-card" style="border-color: #f59e0b;">
-                <h3>میزان فروش کل</h3>
-                <div class="value" id="total-sales">0 ریال</div>
-            </div>
+        <!-- تب‌های اصلی -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">📊 نمای اجرایی & نمودارها</button>
+            <button class="tab-btn" onclick="switchTab('projects')">🚀 پروژه‌های بهبود (مرحله ۰۸)</button>
+            <button class="tab-btn" onclick="switchTab('data-entry')">📝 مرکز ثبت داده‌ها (KPIs)</button>
+            <button class="tab-btn" onclick="switchTab('issues')">🔍 عارضه‌ها & فرصت‌ها (مراحل ۰۵-۰۶)</button>
         </div>
 
-        <div class="main-content">
-            <!-- فرم ثبت شاخص جدید -->
-            <div class="panel">
-                <h3>ثبت شاخص جدید</h3>
-                <form id="kpiForm">
-                    <div class="form-group">
-                        <label>عنوان شاخص:</label>
-                        <input type="text" id="kpiTitle" placeholder="مثلاً: تولید فرش ۱۲۰۰ شانه" required>
+        <div class="container">
+            
+            <!-- تب ۱: نمای اجرایی -->
+            <div id="tab-overview" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>کل پروژه‌های بهبود</h3>
+                        <div class="value" id="stat-total-projects">0</div>
                     </div>
-                    <div class="form-group">
-                        <label>دسته‌بندی:</label>
-                        <select id="kpiCategory">
-                            <option value="تولید">تولید</option>
-                            <option value="فروش">فروش</option>
-                            <option value="کیفیت">کیفیت و ضایعات</option>
-                            <option value="مالی">مالی</option>
-                        </select>
+                    <div class="stat-card" style="border-color: #10b981;">
+                        <h3>میانگین پیشرفت تحول</h3>
+                        <div class="value" id="stat-avg-progress">0%</div>
                     </div>
-                    <div class="form-group">
-                        <label>مقدار:</label>
-                        <input type="number" id="kpiValue" placeholder="مثلا: 450" required>
+                    <div class="stat-card" style="border-color: #f59e0b;">
+                        <h3>عارضه‌های فعال</h3>
+                        <div class="value" id="stat-active-issues">0</div>
                     </div>
-                    <div class="form-group">
-                        <label>واحد اندازه‌گیری:</label>
-                        <input type="text" id="kpiUnit" placeholder="متر مربع، تخته، درصد..." required>
+                    <div class="stat-card" style="border-color: #6366f1;">
+                        <h3>شاخص‌های کلیدی ثبت شده</h3>
+                        <div class="value" id="stat-total-kpis">0</div>
                     </div>
-                    <div class="form-group">
-                        <label>تاریخ:</label>
-                        <input type="date" id="kpiDate" required>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h3>روند رشد شاخص‌ها (قبل و بعد تحول)</h3>
+                        <canvas id="kpiChart" height="200"></canvas>
                     </div>
-                    <button type="submit" class="btn">ثبت شاخص</button>
-                </form>
+                    <div class="panel">
+                        <h3>وضعیت پروژه‌های تحول</h3>
+                        <canvas id="projectsChart" height="200"></canvas>
+                    </div>
+                </div>
             </div>
 
-            <!-- جدول لیست شاخص‌ها -->
-            <div class="panel">
-                <h3>جدول شاخص‌های ثبت شده</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>عنوان</th>
-                            <th>دسته‌بندی</th>
-                            <th>مقدار</th>
-                            <th>واحد</th>
-                            <th>تاریخ</th>
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="kpiTableBody">
-                        <!-- داده‌ها در اینجا رندر می‌شوند -->
-                    </tbody>
-                </table>
+            <!-- تب ۲: پروژه‌های بهبود (مرحله ۰۸) -->
+            <div id="tab-projects" class="tab-content">
+                <div class="grid-2">
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>تعریف پروژه جدید پیشنهادی</h3>
+                        <form id="projectForm">
+                            <div class="form-group">
+                                <label>عنوان پروژه بهبود:</label>
+                                <input type="text" id="projTitle" placeholder="مثلا: اصلاح خط تولید / راه‌اندازی CRM" required>
+                            </div>
+                            <div class="form-group">
+                                <label>مسئول اجرا:</label>
+                                <input type="text" id="projOwner" placeholder="مدیر فروش / مدیر تولید" required>
+                            </div>
+                            <div class="form-group">
+                                <label>درصد پیشرفت (۰ تا ۱۰۰):</label>
+                                <input type="number" id="projProgress" min="0" max="100" placeholder="25" required>
+                            </div>
+                            <div class="form-group">
+                                <label>وضعیت:</label>
+                                <select id="projStatus">
+                                    <option value="در حال اجرا">در حال اجرا</option>
+                                    <option value="تکمیل شده">تکمیل شده</option>
+                                    <option value="معوق">معوق</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn">ثبت پروژه پیشنهادی</button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <h3>لیست پروژه‌های بهبود و تحول</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>عنوان پروژه</th>
+                                    <th>مسئول</th>
+                                    <th>پیشرفت</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
+
+            <!-- تب ۳: مرکز ثبت داده‌ها (KPIs) -->
+            <div id="tab-data-entry" class="tab-content">
+                <div class="grid-2">
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>ورود داده عملکردی</h3>
+                        <form id="kpiForm">
+                            <div class="form-group">
+                                <label>عنوان شاخص (KPI):</label>
+                                <input type="text" id="kpiTitle" placeholder="مثلاً: سود خالص / تعداد مشتریان جدید" required>
+                            </div>
+                            <div class="form-group">
+                                <label>دسته‌بندی:</label>
+                                <select id="kpiCategory">
+                                    <option value="مالی">مالی & نقدینگی</option>
+                                    <option value="فروش">فروش & بازاریابی</option>
+                                    <option value="عملیات">عملیات & تولید/خدمات</option>
+                                    <option value="منابع انسانی">منابع انسانی & تیم</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>مقدار فعلی:</label>
+                                <input type="number" id="kpiValue" placeholder="150" required>
+                            </div>
+                            <div class="form-group">
+                                <label>واحد اندازه‌گیری:</label>
+                                <input type="text" id="kpiUnit" placeholder="میلیون تومان / درصد / تعداد" required>
+                            </div>
+                            <button type="submit" class="btn">ثبت داده</button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <h3>لیست داده‌های ثبت‌شده کسب‌وکار</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>عنوان</th>
+                                    <th>دسته</th>
+                                    <th>مقدار</th>
+                                    <th>واحد</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpiTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تب ۴: عارضه‌ها و فرصت‌ها -->
+            <div id="tab-issues" class="tab-content">
+                <div class="grid-2">
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>ثبت عارضه / فرصت (مراحل ۰۵ و ۰۶)</h3>
+                        <form id="issueForm">
+                            <div class="form-group">
+                                <label>شرح عارضه / فرصت:</label>
+                                <textarea id="issueTitle" rows="3" placeholder="مثلا: زمان ضایعات تولید بالاست یا عدم وجود سیستم پیگیری مشتریان" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>شدت/اولویت:</label>
+                                <select id="issuePriority">
+                                    <option value="بالا">بسیار حیاتی (بالا)</option>
+                                    <option value="متوسط">متوسط</option>
+                                    <option value="پایین">کم‌اهمیت</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn">ثبت عارضه</button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <h3>شناسنامه‌ی عارضه‌های کسب‌وکار</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>شرح عارضه</th>
+                                    <th>اولویت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issuesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         // احراز هویت
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            showDashboard();
-        }
+        if (localStorage.getItem('isLoggedIn') === 'true') showDashboard();
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const un = document.getElementById('username').value.trim();
-            const pw = document.getElementById('password').value.trim();
-
-            if (un === 'admin' && pw === '123456') {
+            if (document.getElementById('username').value.trim() === 'admin' && document.getElementById('password').value.trim() === '123456') {
                 localStorage.setItem('isLoggedIn', 'true');
                 showDashboard();
-            } else {
-                document.getElementById('error').style.display = 'block';
             }
         });
 
         function showDashboard() {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dashboard-section').style.display = 'block';
-            loadKPIs();
+            renderAll();
         }
 
         function logout() {
@@ -175,67 +295,147 @@
             location.reload();
         }
 
-        // مدیریت داده‌های KPI
-        function getKPIs() {
-            return JSON.parse(localStorage.getItem('kpiData') || '[]');
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        function saveKPIs(data) {
-            localStorage.setItem('kpiData', JSON.stringify(data));
-            loadKPIs();
-        }
+        // --- مدیریت داده‌ها در Storage ---
+        const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
 
+        // ثبت پروژه جدید
+        document.getElementById('projectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const list = getData('biz_projects');
+            list.unshift({
+                id: Date.now(),
+                title: document.getElementById('projTitle').value,
+                owner: document.getElementById('projOwner').value,
+                progress: parseInt(document.getElementById('projProgress').value),
+                status: document.getElementById('projStatus').value
+            });
+            saveData('biz_projects', list);
+            this.reset();
+        });
+
+        // ثبت KPI جدید
         document.getElementById('kpiForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const newKPI = {
+            const list = getData('biz_kpis');
+            list.unshift({
                 id: Date.now(),
                 title: document.getElementById('kpiTitle').value,
                 category: document.getElementById('kpiCategory').value,
                 value: parseFloat(document.getElementById('kpiValue').value),
-                unit: document.getElementById('kpiUnit').value,
-                date: document.getElementById('kpiDate').value
-            };
-
-            const kpis = getKPIs();
-            kpis.unshift(newKPI);
-            saveKPIs(kpis);
+                unit: document.getElementById('kpiUnit').value
+            });
+            saveData('biz_kpis', list);
             this.reset();
         });
 
-        function deleteKPI(id) {
-            let kpis = getKPIs();
-            kpis = kpis.filter(item => item.id !== id);
-            saveKPIs(kpis);
+        // ثبت عارضه جدید
+        document.getElementById('issueForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const list = getData('biz_issues');
+            list.unshift({
+                id: Date.now(),
+                title: document.getElementById('issueTitle').value,
+                priority: document.getElementById('issuePriority').value
+            });
+            saveData('biz_issues', list);
+            this.reset();
+        });
+
+        // حذف آیتم‌ها
+        function deleteItem(key, id) {
+            saveData(key, getData(key).filter(i => i.id !== id));
         }
 
-        function loadKPIs() {
-            const kpis = getKPIs();
-            const tbody = document.getElementById('kpiTableBody');
-            tbody.innerHTML = '';
+        // رندر و بروزرسانی نمایش داده‌ها و نمودارها
+        let chart1, chart2;
+        function renderAll() {
+            const projects = getData('biz_projects');
+            const kpis = getData('biz_kpis');
+            const issues = getData('biz_issues');
 
-            let totalProd = 0;
-            let totalSales = 0;
+            // ۱. جدول پروژه‌ها
+            document.getElementById('projectsTable').innerHTML = projects.map(p => `
+                <tr>
+                    <td><b>${p.title}</b></td>
+                    <td>${p.owner}</td>
+                    <td>${p.progress}%</td>
+                    <td><span class="badge ${p.status === 'تکمیل شده' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td>
+                    <td><button onclick="deleteItem('biz_projects', ${p.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
+                </tr>
+            `).join('');
 
-            kpis.forEach(item => {
-                if (item.category === 'تولید') totalProd += item.value;
-                if (item.category === 'فروش') totalSales += item.value;
+            // ۲. جدول KPI
+            document.getElementById('kpiTable').innerHTML = kpis.map(k => `
+                <tr>
+                    <td><b>${k.title}</b></td>
+                    <td>${k.category}</td>
+                    <td>${k.value.toLocaleString()}</td>
+                    <td>${k.unit}</td>
+                    <td><button onclick="deleteItem('biz_kpis', ${k.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
+                </tr>
+            `).join('');
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.title}</td>
-                    <td>${item.category}</td>
-                    <td>${item.value.toLocaleString()}</td>
-                    <td>${item.unit}</td>
-                    <td>${item.date}</td>
-                    <td><button class="action-btn" onclick="deleteKPI(${item.id})">حذف</button></td>
-                `;
-                tbody.appendChild(tr);
+            // ۳. جدول عارضه‌ها
+            document.getElementById('issuesTable').innerHTML = issues.map(i => `
+                <tr>
+                    <td>${i.title}</td>
+                    <td><span class="badge ${i.priority === 'بالا' ? 'badge-danger' : 'badge-warning'}">${i.priority}</span></td>
+                    <td><button onclick="deleteItem('biz_issues', ${i.id})" style="color:red; border:none; background:none; cursor:pointer;">رفع شد / حذف</button></td>
+                </tr>
+            `).join('');
+
+            // ۴. کارت‌های آمار
+            document.getElementById('stat-total-projects').innerText = projects.length;
+            const avgProgress = projects.length ? Math.round(projects.reduce((a,b) => a + b.progress, 0) / projects.length) : 0;
+            document.getElementById('stat-avg-progress').innerText = avgProgress + '%';
+            document.getElementById('stat-active-issues').innerText = issues.length;
+            document.getElementById('stat-total-kpis').innerText = kpis.length;
+
+            // ۵. رسم نمودارها
+            renderCharts(kpis, projects);
+        }
+
+        function renderCharts(kpis, projects) {
+            if (chart1) chart1.destroy();
+            if (chart2) chart2.destroy();
+
+            // نمودار ۱: مقادیر KPI
+            const ctx1 = document.getElementById('kpiChart').getContext('2d');
+            chart1 = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: kpis.slice(0, 5).map(k => k.title),
+                    datasets: [{ label: 'مقدار شاخص', data: kpis.slice(0, 5).map(k => k.value), backgroundColor: '#2563eb' }]
+                },
+                options: { responsive: true }
             });
 
-            // بروزرسانی آمار
-            document.getElementById('total-kpis').innerText = kpis.length;
-            document.getElementById('total-production').innerText = totalProd.toLocaleString() + ' متر مربع';
-            document.getElementById('total-sales').innerText = totalSales.toLocaleString() + ' ریال';
+            // نمودار ۲: پیشرفت پروژه‌ها
+            const ctx2 = document.getElementById('projectsChart').getContext('2d');
+            chart2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['تکمیل شده', 'در حال اجرا', 'معوق'],
+                    datasets: [{
+                        data: [
+                            projects.filter(p => p.status === 'تکمیل شده').length,
+                            projects.filter(p => p.status === 'در حال اجرا').length,
+                            projects.filter(p => p.status === 'معوق').length
+                        ],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: { responsive: true }
+            });
         }
     </script>
 </body>
