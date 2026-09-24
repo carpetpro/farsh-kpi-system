@@ -2,8 +2,8 @@ name = "farsh-kpi-system"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
-[site]
-bucket = "./"
+[assets]
+directory = "./public"
 
 [[d1_databases]]
 binding = "DB"
