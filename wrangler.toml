@@ -1,0 +1,11 @@
+name = "farsh-kpi-system"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[site]
+bucket = "./"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "farsh-kpi-db"
+database_id = "0d8a7e34-60c3-49b1-a79a-09c1f3cc1943"
