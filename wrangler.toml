@@ -1,0 +1,24 @@
+name = "farsh-kpi-system"
+main = "src/worker.js"
+compatibility_date = "2024-09-23"
+
+# فایل‌های استاتیک داشبورد (public/index.html) به‌صورت خودکار سرو می‌شوند
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# دیتابیس D1 — بعد از اجرای:
+#   wrangler d1 create farsh-kpi-db
+# مقدار database_id زیر را با خروجی آن دستور جایگزین کنید
+[[d1_databases]]
+binding = "DB"
+database_name = "farsh-kpi-db"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+# متغیرهای محرمانه (secrets) — این‌ها را در فایل قرار ندهید، با دستور زیر ست کنید:
+#   wrangler secret put ADMIN_PASSWORD
+#   wrangler secret put SESSION_SECRET
+#   wrangler secret put TELEGRAM_BOT_TOKEN
+#   wrangler secret put TELEGRAM_WEBHOOK_SECRET
+#   wrangler secret put TRYON_API_KEY

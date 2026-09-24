@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داشبورد شاخص‌های کلیدی | شبکه فروش هوشمند فرش</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --surface:#f6f3ee; --surface-2:#efe9e1; --ink:#211c18; --ink-soft:#5c534a;
+    --line:#e3dcd1; --madder:#93242c; --indigo:#2b3856; --indigo-soft:#e5e8f0;
+    --ochre:#a9762c; --ochre-soft:#f3e6d2; --green:#3c6e49; --green-soft:#e2ede3;
+    --shadow:0 1px 2px rgba(33,28,24,.06),0 6px 18px rgba(33,28,24,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16130f; --surface:#1f1b16; --surface-2:#292219; --ink:#f2ece2; --ink-soft:#b8ac9c;
+      --line:#38312a; --madder:#d9767c; --indigo:#a7b3d6; --indigo-soft:#232a3d;
+      --ochre:#d9ac6b; --ochre-soft:#3a2e1a; --green:#8fc19c; --green-soft:#1f2c22;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16130f; --surface:#1f1b16; --surface-2:#292219; --ink:#f2ece2; --ink-soft:#b8ac9c;
+    --line:#38312a; --madder:#d9767c; --indigo:#a7b3d6; --indigo-soft:#232a3d;
+    --ochre:#d9ac6b; --ochre-soft:#3a2e1a; --green:#8fc19c; --green-soft:#1f2c22;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Vazirmatn',system-ui,sans-serif; line-height:1.7; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:720px; margin:0 auto; padding:22px 16px 60px; }
+
+  /* --- ورود --- */
+  #loginScreen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box{ width:100%; max-width:340px; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:26px 22px; box-shadow:var(--shadow); }
+  .login-box h1{ font-size:17px; font-weight:800; margin:0 0 6px; }
+  .login-box p{ font-size:13px; color:var(--ink-soft); margin:0 0 18px; }
+  .login-box input{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-size:14px; color:var(--ink); font-family:inherit; margin-bottom:12px; }
+  .login-box button{ width:100%; background:var(--indigo); color:#fff; border:none; border-radius:10px; padding:11px; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; }
+  .login-error{ color:var(--madder); font-size:12.5px; margin-top:10px; display:none; }
+  [hidden]{ display:none !important; }
+
+  header.hero{ padding:6px 0 22px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .kicker{ color:var(--madder); font-weight:600; font-size:13px; margin:0 0 6px; }
+  h1{ font-size:23px; font-weight:800; margin:0 0 10px; letter-spacing:-.01em; }
+  .hero p{ color:var(--ink-soft); font-size:14px; margin:0; max-width:52ch; }
+  #logoutBtn{ flex:0 0 auto; background:none; border:1px solid var(--line); color:var(--ink-soft); font-family:inherit; font-size:12px; padding:7px 12px; border-radius:9px; cursor:pointer; }
+
+  nav.tabs{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:18px; scrollbar-width:none; }
+  nav.tabs::-webkit-scrollbar{ display:none; }
+  .tab{ flex:0 0 auto; padding:9px 15px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--ink-soft); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; }
+  .tab.active{ background:var(--indigo); color:#fff; border-color:var(--indigo); }
+
+  .summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  .summary .cell{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 10px; text-align:center; }
+  .summary .cell .n{ font-size:20px; font-weight:800; }
+  .summary .cell .l{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .summary .cell.on .n{ color:var(--green); } .summary .cell.behind .n{ color:var(--ochre); } .summary .cell.pending .n{ color:var(--ink-soft); }
+
+  .category-title{ font-size:16px; font-weight:700; margin:22px 0 4px; }
+  .category-desc{ font-size:13px; color:var(--ink-soft); margin:0 0 14px; }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:var(--shadow); }
+  .card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .card-title{ font-size:14.5px; font-weight:700; }
+  .badge{ flex:0 0 auto; font-size:11px; font-weight:600; padding:4px 9px; border-radius:999px; white-space:nowrap; }
+  .badge.on{ background:var(--green-soft); color:var(--green); } .badge.behind{ background:var(--ochre-soft); color:var(--ochre); } .badge.pending{ background:var(--surface-2); color:var(--ink-soft); }
+  .badge.auto{ background:var(--indigo-soft); color:var(--indigo); }
+
+  .formula{ font-size:12.5px; background:var(--surface-2); border-radius:10px; padding:8px 10px; color:var(--ink); margin-bottom:10px; direction:ltr; text-align:left; unicode-bidi:plaintext; }
+  .source{ font-size:13px; color:var(--ink-soft); margin-bottom:12px; }
+  .source b{ color:var(--ink); font-weight:600; }
+  .meta-row{ font-size:11.5px; color:var(--ink-soft); margin-bottom:12px; display:flex; gap:10px; flex-wrap:wrap; }
+
+  .inputs{ display:flex; gap:10px; }
+  .field{ flex:1; } .field label{ display:block; font-size:11px; color:var(--ink-soft); margin-bottom:4px; }
+  .field input{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:8px 9px; font-size:13.5px; color:var(--ink); font-family:inherit; }
+  .field input:disabled{ color:var(--ink-soft); background:var(--surface-2); }
+  .field input:focus{ outline:2px solid var(--indigo); outline-offset:1px; }
+
+  .progress{ height:6px; border-radius:4px; background:var(--surface-2); margin-top:12px; overflow:hidden; }
+  .progress .fill{ height:100%; border-radius:4px; background:var(--indigo); transition:width .25s ease; }
+
+  /* --- تب فروشگاه‌ها --- */
+  .store-form{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .store-form input{ flex:1; min-width:120px; background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:9px 10px; font-size:13.5px; color:var(--ink); font-family:inherit; }
+  .store-form button{ background:var(--indigo); color:#fff; border:none; border-radius:9px; padding:9px 16px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; }
+  .store-row{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:13px 14px; margin-bottom:10px; }
+  .store-row .name{ font-weight:700; font-size:14px; }
+  .store-row .meta{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .store-row .code{ font-family:monospace; background:var(--surface-2); padding:2px 8px; border-radius:6px; font-size:12.5px; }
+  .store-status{ display:inline-block; font-size:11px; padding:3px 9px; border-radius:999px; margin-inline-start:6px; }
+  .store-status.active{ background:var(--green-soft); color:var(--green); }
+  .store-status.pending{ background:var(--ochre-soft); color:var(--ochre); }
+  .new-code-box{ background:var(--indigo-soft); border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:16px; }
+
+  footer{ margin-top:30px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>ورود به داشبورد</h1>
+    <p>شبکه فروش هوشمند فرش — دسترسی مدیریت</p>
+    <input type="password" id="passwordInput" placeholder="رمز عبور">
+    <button id="loginBtn">ورود</button>
+    <div class="login-error" id="loginError">رمز عبور نادرست است.</div>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+
+  <header class="hero">
+    <div>
+      <p class="kicker">در حال اجرا</p>
+      <h1>داشبورد شاخص‌های کلیدی</h1>
+      <p>داده‌ها به‌صورت زنده از ربات تلگرام مغازه‌داران و وب‌اپ پرو مجازی جمع‌آوری می‌شوند.</p>
+    </div>
+    <button id="logoutBtn">خروج</button>
+  </header>
+
+  <div class="summary" id="summary"></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="content"></div>
+
+  <footer>این داشبورد فقط برای مدیریت شبکه قابل مشاهده است.</footer>
+</div>
+
+<script>
+const KPI_DEFS = [
+  { cat:"acquisition", catTitle:"جذب و توسعه شبکه فروشگاه‌ها", catDesc:"سنجش سرعت و کیفیت عضوگیری فروشگاه‌ها در شبکه.",
+    items:[
+      { id:"acq_rate", name:"نرخ جذب فروشگاه", formula:"نرخ جذب = (فروشگاه‌های عضوشده ÷ فروشگاه‌های مذاکره‌شده) × ۱۰۰", source:"از <b>CRM جذب فروشگاه</b> یا فایل پیگیری تیم فروش B2B.", unit:"٪", freq:"ماهانه", lowerIsBetter:false },
+      { id:"acq_active", name:"تعداد فروشگاه‌های فعال در شبکه", formula:"شمارش فروشگاه‌هایی با حداقل یک تعامل در ۳۰ روز اخیر", source:"به‌صورت خودکار از رویدادهای ربات تلگرام و وب‌اپ پرو مجازی محاسبه می‌شود.", unit:"فروشگاه", freq:"لحظه‌ای", lowerIsBetter:false },
+      { id:"acq_retention", name:"نرخ نگه‌داشت فروشگاه (۶ ماهه)", formula:"نگه‌داشت = (فروشگاه‌های فعال پس از ۶ ماه ÷ کل عضوشده در آن دوره) × ۱۰۰", source:"مقایسه تاریخ عضویت با آخرین تعامل در پنل عضویت.", unit:"٪", freq:"فصلی", lowerIsBetter:false },
+      { id:"acq_geo", name:"پوشش جغرافیایی", formula:"شمارش شهرهای دارای حداقل یک فروشگاه فعال", source:"به‌صورت خودکار از آدرس فروشگاه‌های ثبت‌شده محاسبه می‌شود.", unit:"شهر", freq:"لحظه‌ای", lowerIsBetter:false }
+    ]},
+  { cat:"adoption", catTitle:"پذیرش و استفاده از ابزارها", catDesc:"سنجش این‌که فروشگاه‌ها واقعاً از ابزارها استفاده می‌کنند.",
+    items:[
+      { id:"ad_ar", name:"نرخ استفاده از پرو مجازی", formula:"(شروع پرو مجازی ÷ کل بازدید وب‌اپ) × ۱۰۰", source:"به‌صورت خودکار از رویدادهای <b>visit</b> و <b>tryon_start</b> که وب‌اپ پرو مجازی می‌فرستد.", unit:"٪", freq:"لحظه‌ای", lowerIsBetter:false },
+      { id:"ad_network", name:"نرخ استفاده از شبکه موجودی سراسری", formula:"(درخواست انتقال کالا ÷ کل سفارش‌های ثبت‌شده) × ۱۰۰", source:"به‌صورت خودکار از گزارش‌های ربات تلگرام مغازه‌داران.", unit:"٪", freq:"ماهانه", lowerIsBetter:false },
+      { id:"ad_installment", name:"نرخ استفاده از فروش اقساطی", formula:"(فروش‌های اقساطی ÷ کل فروش‌ها) × ۱۰۰", source:"به‌صورت خودکار از گزارش‌های ربات تلگرام مغازه‌داران.", unit:"٪", freq:"ماهانه", lowerIsBetter:false }
+    ]},
+  { cat:"effectiveness", catTitle:"اثربخشی فروش", catDesc:"سنجش تأثیر واقعی ابزارها روی نتیجه فروش.",
+    items:[
+      { id:"ef_conv", name:"شکاف نرخ تبدیل با/بدون پرو مجازی", formula:"نرخ تبدیل با پرو − نرخ تبدیل بدون پرو", source:"نیاز به اتصال POS فروشگاه دارد؛ فعلاً به‌صورت دوره‌ای و دستی از نمونه‌گیری وارد کنید.", unit:"٪ اختلاف", freq:"فصلی", lowerIsBetter:false },
+      { id:"ef_saved", name:"نرخ مشتری حفظ‌شده به‌جای هدایت به رقیب", formula:"(درخواست‌های تأمین‌شده ÷ کل درخواست‌های ناموجود) × ۱۰۰", source:"به‌صورت خودکار از گزارش‌های «انتقال کالا» و «تأمین‌شد» در ربات تلگرام.", unit:"٪", freq:"ماهانه", lowerIsBetter:false },
+      { id:"ef_aov", name:"تغییر میانگین سبد خرید پس از اقساط", formula:"میانگین خرید اقساطی − میانگین خرید نقدی", source:"نیاز به اتصال صندوق فروش (POS) دارد؛ فعلاً دستی وارد کنید.", unit:"٪ اختلاف", freq:"فصلی", lowerIsBetter:false },
+      { id:"ef_installment_share", name:"سهم فروش اقساطی از گردش مالی", formula:"(مبلغ فروش اقساطی ÷ کل مبلغ فروش) × ۱۰۰", source:"به‌صورت خودکار از مبالغ ثبت‌شده در ربات تلگرام.", unit:"٪", freq:"ماهانه", lowerIsBetter:false }
+    ]},
+  { cat:"financial", catTitle:"مالی و بازگشت سرمایه پروژه", catDesc:"سنجش توجیه مالی سرمایه‌گذاری روی این اکوسیستم.",
+    items:[
+      { id:"fin_cost", name:"هزینه کل پیاده‌سازی", formula:"هزینه فناوری + آموزش + بازاریابی جذب فروشگاه", source:"از بودجه و حسابداری پروژه در کارخانه؛ به‌صورت دستی وارد کنید.", unit:"میلیون تومان", freq:"فصلی", lowerIsBetter:false },
+      { id:"fin_incremental", name:"افزایش فروش ناشی از پروژه", formula:"فروش پس از عضویت − فروش پایه پیش از عضویت", source:"مقایسه گزارش فروش فروشگاه پیش و پس از عضویت؛ دستی وارد کنید.", unit:"٪ رشد", freq:"فصلی", lowerIsBetter:false },
+      { id:"fin_roi", name:"ROI پروژه", formula:"(افزایش فروش خالص − هزینه کل) ÷ هزینه کل × ۱۰۰", source:"از ترکیب دو شاخص «هزینه» و «افزایش فروش»؛ دستی وارد کنید.", unit:"٪", freq:"فصلی", lowerIsBetter:false },
+      { id:"fin_cac", name:"هزینه جذب هر فروشگاه (CAC)", formula:"هزینه بازاریابی B2B ÷ تعداد فروشگاه جذب‌شده", source:"از بودجه تیم فروش سازمانی؛ دستی وارد کنید.", unit:"میلیون تومان", freq:"فصلی", lowerIsBetter:true }
+    ]},
+  { cat:"quality", catTitle:"رضایت و ریسک", catDesc:"سنجش کیفیت تجربه فروشگاه‌دار و ریسک‌های عملیاتی.",
+    items:[
+      { id:"q_nps", name:"رضایت فروشگاه‌داران (NPS)", formula:"٪ حامیان − ٪ منتقدان", source:"نظرسنجی دوره‌ای؛ دستی وارد کنید.", unit:"امتیاز", freq:"فصلی", lowerIsBetter:false },
+      { id:"q_complaint", name:"نرخ شکایت مرتبط با پرو مجازی", formula:"(شکایت‌های ثبت‌شده ÷ کل استفاده از پرو مجازی) × ۱۰۰", source:"به‌صورت خودکار از گزارش «شکایت» در ربات تلگرام و رویدادهای وب‌اپ پرو مجازی.", unit:"٪", freq:"ماهانه", lowerIsBetter:true },
+      { id:"q_default", name:"نرخ نکول یا تأخیر در اقساط", formula:"(اقساط دارای تأخیر ÷ کل قراردادهای اقساطی) × ۱۰۰", source:"از گزارش ریسک سامانه‌های اقساط (دیجی‌پی/ترب‌پی/اسنپ‌پی)؛ دستی وارد کنید.", unit:"٪", freq:"ماهانه", lowerIsBetter:true }
+    ]}
+];
+
+let serverData = { auto:{}, manual:{}, targets:{}, autoKpiIds:[], manualKpiIds:[] };
+let activeTab = "acquisition";
+const TABS = KPI_DEFS.map(c => ({ id:c.cat, title:c.catTitle })).concat([{ id:"stores", title:"مغازه‌داران" }]);
+
+/* ------------- ورود ------------- */
+async function checkAuth(){
+  const res = await fetch("/api/me");
+  const data = await res.json();
+  if(data.authenticated){ showApp(); } else { document.getElementById("loginScreen").hidden = false; }
+}
+document.getElementById("loginBtn").addEventListener("click", doLogin);
+document.getElementById("passwordInput").addEventListener("keydown", e => { if(e.key === "Enter") doLogin(); });
+async function doLogin(){
+  const password = document.getElementById("passwordInput").value;
+  const res = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ password }) });
+  if(res.ok){ showApp(); } else { document.getElementById("loginError").style.display = "block"; }
+}
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await fetch("/api/logout", { method:"POST" });
+  location.reload();
+});
+async function showApp(){
+  document.getElementById("loginScreen").hidden = true;
+  document.getElementById("app").hidden = false;
+  await loadKpis();
+  renderTabs(); renderSummary(); renderContent();
+}
+
+/* ------------- داده ------------- */
+async function loadKpis(){
+  const res = await fetch("/api/kpis");
+  if(res.status === 401){ location.reload(); return; }
+  serverData = await res.json();
+}
+
+function actualFor(kpiId){
+  if(serverData.autoKpiIds.includes(kpiId)) return serverData.auto[kpiId];
+  return serverData.manual[kpiId];
+}
+function isAuto(kpiId){ return serverData.autoKpiIds.includes(kpiId); }
+function targetFor(kpiId){ return serverData.targets[kpiId]; }
+
+function status(kpi){
+  const a = actualFor(kpi.id), t = targetFor(kpi.id);
+  if(a === null || a === undefined || t === null || t === undefined) return "pending";
+  const good = kpi.lowerIsBetter ? (a <= t) : (a >= t);
+  return good ? "on" : "behind";
+}
+function statusLabel(s){ return s==="on"?"در مسیر هدف":s==="behind"?"نیاز به توجه":"در انتظار داده"; }
+
+/* ------------- رندر ------------- */
+function renderTabs(){
+  const tabs = document.getElementById("tabs"); tabs.innerHTML = "";
+  TABS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "tab" + (t.id===activeTab ? " active":"");
+    b.textContent = t.title;
+    b.onclick = () => { activeTab = t.id; renderTabs(); renderContent(); };
+    tabs.appendChild(b);
+  });
+}
+
+function renderSummary(){
+  let on=0, behind=0, pending=0, total=0;
+  KPI_DEFS.forEach(c => c.items.forEach(k => { total++; const s=status(k); if(s==="on")on++; else if(s==="behind")behind++; else pending++; }));
+  document.getElementById("summary").innerHTML = `
+    <div class="cell on"><div class="n">${on}</div><div class="l">در مسیر هدف</div></div>
+    <div class="cell behind"><div class="n">${behind}</div><div class="l">نیاز به توجه</div></div>
+    <div class="cell pending"><div class="n">${pending}</div><div class="l">در انتظار داده (${total} شاخص)</div></div>`;
+}
+
+function renderContent(){
+  const el = document.getElementById("content");
+  if(activeTab === "stores"){ renderStoresTab(el); return; }
+  const cat = KPI_DEFS.find(c => c.cat === activeTab);
+  let html = `<h2 class="category-title">${cat.catTitle}</h2><p class="category-desc">${cat.catDesc}</p>`;
+  cat.items.forEach(k => {
+    const a = actualFor(k.id), t = targetFor(k.id), s = status(k), auto = isAuto(k.id);
+    let pct = 0;
+    if(a!==null && a!==undefined && t!==null && t!==undefined && t!==0){
+      pct = k.lowerIsBetter ? Math.max(0,Math.min(100,(t/Math.max(a,0.0001))*100)) : Math.max(0,Math.min(100,(a/t)*100));
+    }
+    html += `
+    <article class="card">
+      <div class="card-head">
+        <div class="card-title">${k.name}</div>
+        <div style="display:flex;gap:6px;">
+          ${auto ? '<div class="badge auto">خودکار</div>' : ''}
+          <div class="badge ${s}">${statusLabel(s)}</div>
+        </div>
+      </div>
+      <div class="formula">${k.formula}</div>
+      <div class="source"><b>منبع داده:</b> ${k.source}</div>
+      <div class="meta-row"><span>دوره سنجش: ${k.freq}</span></div>
+      <div class="inputs">
+        <div class="field">
+          <label>هدف (${k.unit})</label>
+          <input type="number" inputmode="decimal" data-target="${k.id}" value="${t ?? ""}" placeholder="—">
+        </div>
+        <div class="field">
+          <label>مقدار فعلی (${k.unit})</label>
+          <input type="number" inputmode="decimal" ${auto ? "disabled" : `data-manual="${k.id}"`} value="${a ?? ""}" placeholder="${auto ? "محاسبه خودکار" : "ثبت نشده"}">
+        </div>
+      </div>
+      <div class="progress"><div class="fill" style="width:${pct}%"></div></div>
+    </article>`;
+  });
+  el.innerHTML = html;
+
+  el.querySelectorAll("[data-target]").forEach(inp => {
+    inp.addEventListener("change", async e => {
+      const kpi_id = e.target.getAttribute("data-target");
+      await fetch("/api/kpi-target", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ kpi_id, value: e.target.value }) });
+      serverData.targets[kpi_id] = e.target.value === "" ? null : Number(e.target.value);
+      renderSummary(); renderContent();
+    });
+  });
+  el.querySelectorAll("[data-manual]").forEach(inp => {
+    inp.addEventListener("change", async e => {
+      const kpi_id = e.target.getAttribute("data-manual");
+      await fetch("/api/manual-kpi", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ kpi_id, value: e.target.value }) });
+      serverData.manual[kpi_id] = e.target.value === "" ? null : Number(e.target.value);
+      renderSummary(); renderContent();
+    });
+  });
+}
+
+async function renderStoresTab(el){
+  el.innerHTML = `<h2 class="category-title">مغازه‌داران عضو شبکه</h2>
+    <p class="category-desc">فروشگاه جدید اضافه کنید، کد ثبت‌نام تولیدشده را برای مغازه‌دار در تلگرام بفرستید تا با /start و وارد کردن کد به ربات متصل شود.</p>
+    <div class="store-form">
+      <input id="newStoreName" placeholder="نام فروشگاه">
+      <input id="newStoreCity" placeholder="شهر">
+      <button id="addStoreBtn">افزودن فروشگاه</button>
+    </div>
+    <div id="newCodeBox"></div>
+    <div id="storeList">در حال بارگذاری...</div>`;
+
+  document.getElementById("addStoreBtn").addEventListener("click", async () => {
+    const name = document.getElementById("newStoreName").value.trim();
+    const city = document.getElementById("newStoreCity").value.trim();
+    if(!name) return;
+    const res = await fetch("/api/stores", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ name, city }) });
+    const data = await res.json();
+    if(data.ok){
+      document.getElementById("newCodeBox").innerHTML = `<div class="new-code-box">کد ثبت‌نام «${name}»: <span class="code">${data.registration_code}</span><br>این کد را برای مغازه‌دار بفرستید تا در ربات تلگرام با /start وارد کند.</div>`;
+      document.getElementById("newStoreName").value = ""; document.getElementById("newStoreCity").value = "";
+      loadStores();
+    }
+  });
+  loadStores();
+}
+
+async function loadStores(){
+  const res = await fetch("/api/stores");
+  const data = await res.json();
+  const list = document.getElementById("storeList");
+  if(!data.stores || data.stores.length === 0){ list.innerHTML = `<p class="category-desc">هنوز فروشگاهی اضافه نشده است.</p>`; return; }
+  list.innerHTML = data.stores.map(s => `
+    <div class="store-row">
+      <div class="name">${s.name} <span class="store-status ${s.status}">${s.status==='active'?'متصل':'در انتظار اتصال'}</span></div>
+      <div class="meta">${s.city || "—"} · کد: <span class="code">${s.registration_code}</span></div>
+    </div>`).join("");
+}
+
+checkAuth();
+</script>
+</body>
+</html>
