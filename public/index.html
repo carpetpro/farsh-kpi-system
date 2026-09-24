@@ -101,21 +101,26 @@
         e.preventDefault();
         loginError.classList.add('hidden');
         
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            })
-        });
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                })
+            });
 
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem('kpi_token', data.token);
-            checkAuth();
-        } else {
-            loginError.textContent = data.message;
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('kpi_token', data.token);
+                checkAuth();
+            } else {
+                loginError.textContent = data.message || 'خطا در ورود';
+                loginError.classList.remove('hidden');
+            }
+        } catch (err) {
+            loginError.textContent = 'ارتباط با سرور برقرار نشد.';
             loginError.classList.remove('hidden');
         }
     });
@@ -128,20 +133,26 @@
 
     // بارگذاری لیست KPI ها
     async function loadKPIs() {
-        const res = await fetch('/api/kpis');
-        const kpis = await res.json();
-        kpiTableBody.innerHTML = '';
-        kpis.forEach(item => {
-            kpiTableBody.innerHTML += `
-                <tr>
-                    <td>${item.title}</td>
-                    <td>${item.category || '-'}</td>
-                    <td>${item.value} ${item.unit || ''}</td>
-                    <td>${item.recorded_date}</td>
-                    <td><button class="btn-danger" onclick="deleteKPI(${item.id})" style="padding: 5px 10px;">حذف</button></td>
-                </tr>
-            `;
-        });
+        try {
+            const res = await fetch('/api/kpis');
+            const kpis = await res.json();
+            kpiTableBody.innerHTML = '';
+            if (Array.isArray(kpis)) {
+                kpis.forEach(item => {
+                    kpiTableBody.innerHTML += `
+                        <tr>
+                            <td>${item.title}</td>
+                            <td>${item.category || '-'}</td>
+                            <td>${item.value} ${item.unit || ''}</td>
+                            <td>${item.recorded_date}</td>
+                            <td><button class="btn-danger" onclick="deleteKPI(${item.id})" style="padding: 5px 10px;">حذف</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (e) {
+            console.error('خطا در دریافت لیست:', e);
+        }
     }
 
     // ثبت KPI جدید
