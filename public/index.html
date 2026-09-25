@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سامانه جامع پایش و تحول کسب‌وکار</title>
-    <!-- Chart.js برای رسم نمودارهای مدیریتی -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Vazir, sans-serif; }
         body { background-color: #f8fafc; color: #1e293b; }
         
-        /* بخش ورود */
         .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; }
         .login-card { background: white; padding: 35px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .login-card h2 { margin-bottom: 8px; color: #0f172a; font-size: 20px; }
@@ -21,38 +19,33 @@
         .btn { width: 100%; padding: 11px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn:hover { background-color: #1d4ed8; }
         .btn-danger { background-color: #ef4444; }
+        .btn-danger:hover { background-color: #dc2626; }
         
-        /* هدر اصلی */
         header { background: #1e293b; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .roadmap-badge { background: #3b82f6; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
         .header-actions { display: flex; align-items: center; gap: 15px; }
         .biz-select { padding: 6px 12px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: white; font-size: 13px; outline: none; }
 
-        /* تب‌ها (Nav Tabs) */
         .nav-tabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 30px; gap: 10px; overflow-x: auto; }
         .tab-btn { padding: 14px 20px; border: none; background: none; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
         .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
-        /* محتوای صفحات */
         .container { padding: 30px; max-width: 1300px; margin: 0 auto; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* کارت‌های آماری */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: right; border-right: 4px solid #2563eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .stat-card h3 { font-size: 12px; color: #64748b; margin-bottom: 8px; }
         .stat-card .value { font-size: 22px; font-weight: bold; color: #0f172a; }
 
-        /* چیدمان شبکه‌ای */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
         @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
         
         .panel { background: white; padding: 22px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .panel h3 { font-size: 16px; color: #0f172a; margin-bottom: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* جداول */
         table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 10px; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         th { background-color: #f8fafc; color: #475569; font-weight: bold; }
@@ -61,7 +54,6 @@
         .badge-warning { background: #fef3c7; color: #b45309; }
         .badge-danger { background: #fee2e2; color: #b91c1c; }
         
-        /* کلاس عدم نمایش بخش‌های مدیریتی */
         .admin-only { display: block; }
     </style>
 </head>
@@ -108,7 +100,7 @@
             <button class="tab-btn" onclick="switchTab('projects', event)">🚀 پروژه‌های بهبود</button>
             <button class="tab-btn" onclick="switchTab('data-entry', event)">📝 مرکز ثبت داده‌ها (KPIs)</button>
             <button class="tab-btn" onclick="switchTab('issues', event)">🔍 عارضه‌ها & فرصت‌ها</button>
-            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات</button>
+            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات & مدیریت کاربران</button>
         </div>
 
         <div class="container">
@@ -281,30 +273,13 @@
                 </div>
             </div>
 
-            <!-- تب ۵: تنظیمات -->
+            <!-- تب ۵: تنظیمات و مدیریت کاربران -->
             <div id="tab-settings" class="tab-content">
                 <div class="grid-2">
                     
-                    <!-- فرم تغییر رمز عبور (برای همه‌ کاربران عمومی است) -->
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>🔐 تغییر رمز عبور فعلی</h3>
-                        <form id="changePasswordForm">
-                            <div class="form-group">
-                                <label>رمز عبور فعلی:</label>
-                                <input type="password" id="currentPassword" required>
-                            </div>
-                            <div class="form-group">
-                                <label>رمز عبور جدید:</label>
-                                <input type="password" id="newPassword" required>
-                            </div>
-                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
-                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
-                        </form>
-                    </div>
-
-                    <!-- فرم ساخت کاربر جدید (فقط مخصوص ادمین) -->
+                    <!-- فرم ساخت کاربر جدید (ویژه مدیر) -->
                     <div class="panel admin-only" style="max-width: 400px;">
-                        <h3>👤 تعریف کاربر جدید (ویژه مدیر)</h3>
+                        <h3>👤 تعریف کاربر جدید</h3>
                         <form id="createUserForm">
                             <div class="form-group">
                                 <label>نام کاربری جدید:</label>
@@ -326,9 +301,44 @@
                         </form>
                     </div>
 
-                    <!-- فرم تعریف کسب‌وکار جدید (فقط مخصوص ادمین) -->
+                    <!-- جدول لیست کاربران فعال و حذف آن‌ها (ویژه مدیر) -->
+                    <div class="panel admin-only">
+                        <h3>👥 لیست کاربران فعال سیستم</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>شناسه</th>
+                                    <th>نام کاربری</th>
+                                    <th>نقش</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <tr><td colspan="4">در حال دریافت کاربران...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- فرم تغییر رمز عبور -->
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>🔐 تغییر رمز عبور فعلی</h3>
+                        <form id="changePasswordForm">
+                            <div class="form-group">
+                                <label>رمز عبور فعلی:</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رمز عبور جدید:</label>
+                                <input type="password" id="newPassword" required>
+                            </div>
+                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
+                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
+                        </form>
+                    </div>
+
+                    <!-- فرم تعریف کسب‌وکار جدید (ویژه مدیر) -->
                     <div class="panel admin-only" style="max-width: 400px;">
-                        <h3>🏢 تعریف کسب‌وکار جدید (ویژه مدیر)</h3>
+                        <h3>🏢 تعریف کسب‌وکار جدید</h3>
                         <form id="addBusinessForm">
                             <div class="form-group">
                                 <label>نام کسب‌وکار یا شعبه جدید:</label>
@@ -346,7 +356,6 @@
     </div>
 
     <script>
-        // --- احراز هویت ---
         if (localStorage.getItem('isLoggedIn') === 'true') {
             showDashboard();
         }
@@ -375,7 +384,7 @@
                     errDiv.style.display = 'block';
                 }
             } catch (err) {
-                if (un === 'admin' && (pw === '123456' || pw === 'admin')) {
+                if (un === 'admin' && (pw === '8446Aba@dan' || pw === 'admin')) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin', role: 'admin' }));
                     showDashboard();
@@ -390,12 +399,12 @@
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dashboard-section').style.display = 'block';
             
-            // مدیریت سطوح دسترسی (مخفی کردن پنل تعریف کاربر برای کاربران عادی)
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
             const adminElements = document.querySelectorAll('.admin-only');
             
             if (userInfo.role === 'admin' || userInfo.username === 'admin') {
                 adminElements.forEach(el => el.style.display = 'block');
+                loadUsersList(); // فراخوانی لیست کاربران برای ادمین
             } else {
                 adminElements.forEach(el => el.style.display = 'none');
             }
@@ -418,7 +427,46 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // --- مدیریت داده‌ها ---
+        // فراخوانی لیست کاربران از سرور D1
+        async function loadUsersList() {
+            const tbody = document.getElementById('usersTable');
+            try {
+                const res = await fetch('/api/users');
+                const users = await res.json();
+                if (users && users.length > 0) {
+                    tbody.innerHTML = users.map(u => `
+                        <tr>
+                            <td>${u.id}</td>
+                            <td><b>${u.username}</b></td>
+                            <td><span class="badge ${u.role === 'admin' ? 'badge-success' : 'badge-warning'}">${u.role === 'admin' ? 'مدیر' : 'کاربر'}</span></td>
+                            <td>
+                                ${u.username !== 'admin' ? `<button onclick="deleteUser(${u.id})" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px; width: auto;">حذف کاربر</button>` : '<span style="color:#94a3b8; font-size:12px;">غیرقابل حذف</span>'}
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4">هیچ کاربری ثبت نشده است.</td></tr>';
+                }
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color:red;">خطا در دریافت کاربران.</td></tr>';
+            }
+        }
+
+        // تابع حذف کاربر توسط ادمین
+        async function deleteUser(userId) {
+            if (!confirm('آیا از حذف این کاربر اطمینان دارید؟')) return;
+            try {
+                const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) {
+                    loadUsersList();
+                }
+            } catch (err) {
+                alert('خطا در حذف کاربر.');
+            }
+        }
+
         const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
         const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
 
@@ -445,6 +493,7 @@
                 msg.style.color = data.success ? 'green' : 'red';
                 if (data.success) {
                     this.reset();
+                    loadUsersList(); // به‌روزرسانی آنی لیست کاربران پس از ساخت
                 }
             } catch (err) {
                 msg.textContent = 'خطا در ارتباط با سرور.';
@@ -567,12 +616,10 @@
             this.reset();
         });
 
-        // حذف
         function deleteItem(key, id) {
             saveData(key, getData(key).filter(i => i.id !== id));
         }
 
-        // رندر داده‌ها و نمودارها
         let chart1, chart2;
         function renderAll() {
             const projects = getData('biz_projects');
