@@ -452,3 +452,25 @@
     </script>
 </body>
 </html>
+<!-- نوار بالای داشبورد برای سوئیچ بین کسب‌وکارها -->
+<div id="businessSelectorCard" class="card hidden">
+    <label>انتخاب کسب‌وکار تحت مدیریت:</label>
+    <select id="businessSelect" onchange="switchBusiness(this.value)">
+        <!-- لیست کسب‌وکارها از API پر می‌شود -->
+    </select>
+</div>
+
+<!-- فرم تغییر رمز عبور -->
+<div class="card" style="margin-top: 20px;">
+    <h3>تغییر رمز عبور حساب کاربری</h3>
+    <form id="changePasswordForm">
+        <div class="form-group">
+            <input type="password" id="currentPassword" placeholder="رمز عبور فعلی" required>
+        </div>
+        <div class="form-group">
+            <input type="password" id="newPassword" placeholder="رمز عبور جدید" required>
+        </div>
+        <button type="submit" style="background-color: #007bff;">تغییر رمز عبور</button>
+        <p id="passMessage" style="margin-top: 10px;"></p>
+    </form>
+</div>
