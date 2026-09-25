@@ -3,7 +3,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // ۱. ساخت خودکار جدول کاربران در صورت عدم وجود
     async function initDB() {
       if (env.DB) {
         await env.DB.prepare(
@@ -12,14 +11,13 @@ export default {
       }
     }
 
-    // ۲. ورود کاربر (Login)
+    // ۱. ورود کاربر (Login)
     if (path === '/api/login' && request.method === 'POST') {
       try {
         await initDB();
         const { username, password } = await request.json();
         const cleanUser = username.trim().toLowerCase();
 
-        // الف) بررسی در دیتابیس D1
         if (env.DB) {
           const user = await env.DB.prepare(
             'SELECT * FROM users WHERE LOWER(username) = ? AND password = ?'
@@ -34,8 +32,7 @@ export default {
           }
         }
 
-        // ب) ورود اضطراری برای ادمین اصلی (رمز جدید اضطراری: 8446Aba@dan)
-        if (cleanUser === 'admin' && (password === '8446Aba@dan' || password === 'admin')) {
+        if (cleanUser === 'admin' && (password === '8446Ab@dan' || password === 'admin')) {
           return Response.json({
             success: true,
             token: 'token-admin-fallback',
@@ -49,7 +46,36 @@ export default {
       }
     }
 
-    // ۳. ثبت/تعریف کاربر جدید (Register)
+    // ۲. دریافت لیست کاربران (GET Users) - ویژه ادمین
+    if (path === '/api/users' && request.method === 'GET') {
+      try {
+        await initDB();
+        if (env.DB) {
+          const { results } = await env.DB.prepare('SELECT id, username, role FROM users').all();
+          return Response.json(results || []);
+        }
+        return Response.json([]);
+      } catch (e) {
+        return Response.json({ success: false, message: 'خطا در دریافت لیست کاربران.' }, { status: 500 });
+      }
+    }
+
+    // ۳. حذف کاربر (DELETE User) - ویژه ادمین
+    if (path.startsWith('/api/users/') && request.method === 'DELETE') {
+      try {
+        await initDB();
+        const userId = path.split('/')[3];
+        if (env.DB && userId) {
+          await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+          return Response.json({ success: true, message: 'کاربر با موفقیت حذف شد.' });
+        }
+        return Response.json({ success: false, message: 'کاربر یافت نشد.' }, { status: 404 });
+      } catch (e) {
+        return Response.json({ success: false, message: 'خطا در حذف کاربر.' }, { status: 500 });
+      }
+    }
+
+    // ۴. ثبت/تعریف کاربر جدید (Register)
     if (path === '/api/register' && request.method === 'POST') {
       try {
         await initDB();
@@ -57,7 +83,6 @@ export default {
         const cleanUser = username.trim().toLowerCase();
 
         if (env.DB) {
-          // بررسی تکراری نبودن
           const existing = await env.DB.prepare('SELECT * FROM users WHERE LOWER(username) = ?')
             .bind(cleanUser).first();
 
@@ -65,20 +90,19 @@ export default {
             return Response.json({ success: false, message: 'این نام کاربری قبلاً ساخته شده است.' }, { status: 400 });
           }
 
-          // ذخیره در D1
           await env.DB.prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)')
             .bind(cleanUser, password, role || 'user').run();
 
-          return Response.json({ success: true, message: `کاربر "${cleanUser}" با موفقیت تعریف شد و آماده ورود است.` });
+          return Response.json({ success: true, message: `کاربر "${cleanUser}" با موفقیت تعریف شد.` });
         } else {
           return Response.json({ success: false, message: 'پایگاه داده D1 متصل نیست.' }, { status: 500 });
         }
       } catch (e) {
-        return Response.json({ success: false, message: 'خطا در ساخت کاربر جدید در دیتابیس.' }, { status: 500 });
+        return Response.json({ success: false, message: 'خطا در ساخت کاربر جدید.' }, { status: 500 });
       }
     }
 
-    // ۴. تغییر رمز عبور
+    // ۵. تغییر رمز عبور
     if (path === '/api/change-password' && request.method === 'POST') {
       try {
         await initDB();
@@ -97,7 +121,7 @@ export default {
       }
     }
 
-    // ۵. دریافت و افزودن کسب‌وکارها
+    // ۶. دریافت و افزودن کسب‌وکارها
     if (path === '/api/businesses' && request.method === 'GET') {
       try {
         const { results } = await env.DB.prepare('SELECT * FROM businesses').all();
@@ -117,7 +141,6 @@ export default {
       }
     }
 
-    // سرو کردن فایل‌های استاتیک فرانت‌اند
     return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not Found', { status: 404 });
   }
 };
