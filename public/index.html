@@ -60,6 +60,9 @@
         .badge-success { background: #dcfce7; color: #15803d; }
         .badge-warning { background: #fef3c7; color: #b45309; }
         .badge-danger { background: #fee2e2; color: #b91c1c; }
+        
+        /* کلاس عدم نمایش بخش‌های مدیریتی */
+        .admin-only { display: block; }
     </style>
 </head>
 <body>
@@ -76,7 +79,7 @@
                 </div>
                 <div class="form-group">
                     <label>رمز عبور:</label>
-                    <input type="password" id="password" placeholder="123456" required>
+                    <input type="password" id="password" placeholder="******" required>
                 </div>
                 <button type="submit" class="btn">ورود به اتاق فرمان</button>
             </form>
@@ -105,7 +108,7 @@
             <button class="tab-btn" onclick="switchTab('projects', event)">🚀 پروژه‌های بهبود</button>
             <button class="tab-btn" onclick="switchTab('data-entry', event)">📝 مرکز ثبت داده‌ها (KPIs)</button>
             <button class="tab-btn" onclick="switchTab('issues', event)">🔍 عارضه‌ها & فرصت‌ها</button>
-            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات & مدیریت کاربران</button>
+            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات</button>
         </div>
 
         <div class="container">
@@ -278,12 +281,30 @@
                 </div>
             </div>
 
-            <!-- تب ۵: تنظیمات، مدیریت کاربران و کسب‌وکار -->
+            <!-- تب ۵: تنظیمات -->
             <div id="tab-settings" class="tab-content">
                 <div class="grid-2">
-                    <!-- فرم ساخت کاربر جدید -->
+                    
+                    <!-- فرم تغییر رمز عبور (برای همه‌ کاربران عمومی است) -->
                     <div class="panel" style="max-width: 400px;">
-                        <h3>👤 تعریف کاربر جدید</h3>
+                        <h3>🔐 تغییر رمز عبور فعلی</h3>
+                        <form id="changePasswordForm">
+                            <div class="form-group">
+                                <label>رمز عبور فعلی:</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رمز عبور جدید:</label>
+                                <input type="password" id="newPassword" required>
+                            </div>
+                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
+                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
+                        </form>
+                    </div>
+
+                    <!-- فرم ساخت کاربر جدید (فقط مخصوص ادمین) -->
+                    <div class="panel admin-only" style="max-width: 400px;">
+                        <h3>👤 تعریف کاربر جدید (ویژه مدیر)</h3>
                         <form id="createUserForm">
                             <div class="form-group">
                                 <label>نام کاربری جدید:</label>
@@ -305,35 +326,19 @@
                         </form>
                     </div>
 
-                    <!-- فرم تغییر رمز عبور -->
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>🔐 تغییر رمز عبور فعلی</h3>
-                        <form id="changePasswordForm">
-                            <div class="form-group">
-                                <label>رمز عبور فعلی:</label>
-                                <input type="password" id="currentPassword" required>
-                            </div>
-                            <div class="form-group">
-                                <label>رمز عبور جدید:</label>
-                                <input type="password" id="newPassword" required>
-                            </div>
-                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
-                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
-                        </form>
-                    </div>
-
-                    <!-- فرم تعریف کسب‌وکار جدید -->
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>🏢 تعریف کسب‌وکار / مجموعه جدید</h3>
+                    <!-- فرم تعریف کسب‌وکار جدید (فقط مخصوص ادمین) -->
+                    <div class="panel admin-only" style="max-width: 400px;">
+                        <h3>🏢 تعریف کسب‌وکار جدید (ویژه مدیر)</h3>
                         <form id="addBusinessForm">
                             <div class="form-group">
                                 <label>نام کسب‌وکار یا شعبه جدید:</label>
-                                <input type="text" id="newBusinessName" placeholder="مثلاً: شعبه دوم / کارخانه فرش ۲" required>
+                                <input type="text" id="newBusinessName" placeholder="مثلاً: شعبه دوم" required>
                             </div>
                             <button type="submit" class="btn">افزایش کسب‌وکار</button>
                             <p id="bizMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
                         </form>
                     </div>
+
                 </div>
             </div>
 
@@ -372,7 +377,7 @@
             } catch (err) {
                 if (un === 'admin' && (pw === '123456' || pw === 'admin')) {
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin' }));
+                    localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin', role: 'admin' }));
                     showDashboard();
                 } else {
                     errDiv.innerText = 'خطا در ارتباط با سرور.';
@@ -384,6 +389,17 @@
         function showDashboard() {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dashboard-section').style.display = 'block';
+            
+            // مدیریت سطوح دسترسی (مخفی کردن پنل تعریف کاربر برای کاربران عادی)
+            const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+            const adminElements = document.querySelectorAll('.admin-only');
+            
+            if (userInfo.role === 'admin' || userInfo.username === 'admin') {
+                adminElements.forEach(el => el.style.display = 'block');
+            } else {
+                adminElements.forEach(el => el.style.display = 'none');
+            }
+
             loadBusinesses();
             renderAll();
         }
@@ -402,7 +418,7 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // --- مدیریت داده‌های محلی و سرور ---
+        // --- مدیریت داده‌ها ---
         const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
         const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
 
@@ -436,7 +452,7 @@
             }
         });
 
-        // تغییر رمز عبور مستقیم با سرور D1
+        // تغییر رمز عبور
         document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const currentUser = JSON.parse(localStorage.getItem('user_info') || '{"id": 1}');
@@ -444,7 +460,7 @@
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
 
-            msg.textContent = "در حال ارسال درخواست به سرور...";
+            msg.textContent = "در حال ارسال درخواست...";
             msg.style.color = "blue";
 
             try {
@@ -465,7 +481,7 @@
                     this.reset();
                 }
             } catch (err) {
-                msg.textContent = 'خطا در ارتباط با سرور جهت تغییر رمز.';
+                msg.textContent = 'خطا در ارتباط با سرور.';
                 msg.style.color = 'red';
             }
         });
@@ -488,7 +504,7 @@
                 this.reset();
                 loadBusinesses();
             } catch(e) {
-                msg.textContent = 'ذخیره شد (حالت محلی).';
+                msg.textContent = 'ذخیره شد.';
                 msg.style.color = 'green';
             }
         });
