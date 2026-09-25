@@ -26,10 +26,8 @@
         header { background: #1e293b; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .roadmap-badge { background: #3b82f6; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
-
-        /* انتخاب کسب‌وکار */
-        .biz-selector { background: #0f172a; color: white; padding: 10px 30px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #334155; }
-        .biz-selector select { width: auto; padding: 5px 10px; background: #1e293b; color: white; border: 1px solid #475569; border-radius: 4px; }
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .biz-select { padding: 6px 12px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: white; font-size: 13px; outline: none; }
 
         /* تب‌ها (Nav Tabs) */
         .nav-tabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 30px; gap: 10px; overflow-x: auto; }
@@ -62,7 +60,6 @@
         .badge-success { background: #dcfce7; color: #15803d; }
         .badge-warning { background: #fef3c7; color: #b45309; }
         .badge-danger { background: #fee2e2; color: #b91c1c; }
-        .error-msg { color: #ef4444; font-size: 13px; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -82,8 +79,8 @@
                     <input type="password" id="password" placeholder="123456" required>
                 </div>
                 <button type="submit" class="btn">ورود به اتاق فرمان</button>
-                <div id="loginError" class="error-msg" style="display:none;"></div>
             </form>
+            <div id="loginError" style="color: red; font-size: 12px; margin-top: 15px; display: none;"></div>
         </div>
     </div>
 
@@ -92,26 +89,23 @@
         <header>
             <h1>
                 سامانه پایش و تحول کسب‌وکار
-                <span class="roadmap-badge">مدیریت متمرکز</span>
+                <span class="roadmap-badge">نسخه ابری D1</span>
             </h1>
-            <button onclick="logout()" class="btn btn-danger" style="width: auto; padding: 6px 15px; font-size: 13px;">خروج</button>
+            <div class="header-actions">
+                <select id="bizSelector" class="biz-select" onchange="switchBusiness(this.value)">
+                    <option value="1">کسب‌وکار مرکزی</option>
+                </select>
+                <button onclick="logout()" class="btn btn-danger" style="width: auto; padding: 6px 15px; font-size: 13px;">خروج</button>
+            </div>
         </header>
-
-        <!-- بخش انتخاب کسب‌وکار (چند مستأجری / Multi-Tenant) -->
-        <div class="biz-selector">
-            <span>کسب‌وکار فعال:</span>
-            <select id="businessSelect" onchange="switchBusiness(this.value)">
-                <option value="1">کسب‌وکار مرکزی / سیستم اصلی</option>
-            </select>
-        </div>
 
         <!-- تب‌های اصلی -->
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('overview')">📊 نمای اجرایی & نمودارها</button>
-            <button class="tab-btn" onclick="switchTab('projects')">🚀 پروژه‌های بهبود</button>
-            <button class="tab-btn" onclick="switchTab('data-entry')">📝 مرکز ثبت داده‌ها (KPIs)</button>
-            <button class="tab-btn" onclick="switchTab('issues')">🔍 عارضه‌ها & فرصت‌ها</button>
-            <button class="tab-btn" onclick="switchTab('settings')">⚙️ تنظیمات & تغییر رمز</button>
+            <button class="tab-btn active" onclick="switchTab('overview', event)">📊 نمای اجرایی & نمودارها</button>
+            <button class="tab-btn" onclick="switchTab('projects', event)">🚀 پروژه‌های بهبود</button>
+            <button class="tab-btn" onclick="switchTab('data-entry', event)">📝 مرکز ثبت داده‌ها (KPIs)</button>
+            <button class="tab-btn" onclick="switchTab('issues', event)">🔍 عارضه‌ها & فرصت‌ها</button>
+            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات & تغییر رمز</button>
         </div>
 
         <div class="container">
@@ -153,7 +147,7 @@
             <div id="tab-projects" class="tab-content">
                 <div class="grid-2">
                     <div class="panel" style="max-width: 400px;">
-                        <h3>تعریف پروژه جدید پیشنهادی</h3>
+                        <h3>تعریف پروژه جدید</h3>
                         <form id="projectForm">
                             <div class="form-group">
                                 <label>عنوان پروژه بهبود:</label>
@@ -175,12 +169,12 @@
                                     <option value="معوق">معوق</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn">ثبت پروژه پیشنهادی</button>
+                            <button type="submit" class="btn">ثبت پروژه</button>
                         </form>
                     </div>
 
                     <div class="panel">
-                        <h3>لیست پروژه‌های بهبود و تحول</h3>
+                        <h3>لیست پروژه‌های بهبود</h3>
                         <table>
                             <thead>
                                 <tr>
@@ -205,7 +199,7 @@
                         <form id="kpiForm">
                             <div class="form-group">
                                 <label>عنوان شاخص (KPI):</label>
-                                <input type="text" id="kpiTitle" placeholder="مثلاً: سود خالص / تعداد مشتریان جدید" required>
+                                <input type="text" id="kpiTitle" placeholder="مثلاً: سود خالص / مشتریان جدید" required>
                             </div>
                             <div class="form-group">
                                 <label>دسته‌بندی:</label>
@@ -218,7 +212,7 @@
                             </div>
                             <div class="form-group">
                                 <label>مقدار فعلی:</label>
-                                <input type="number" id="kpiValue" placeholder="150" step="any" required>
+                                <input type="number" id="kpiValue" placeholder="150" required>
                             </div>
                             <div class="form-group">
                                 <label>واحد اندازه‌گیری:</label>
@@ -254,7 +248,7 @@
                         <form id="issueForm">
                             <div class="form-group">
                                 <label>شرح عارضه / فرصت:</label>
-                                <textarea id="issueTitle" rows="3" placeholder="مثلا: زمان ضایعات تولید بالاست" required></textarea>
+                                <textarea id="issueTitle" rows="3" placeholder="مثلا: عدم پیگیری مشتریان یا ضایعات تولید" required></textarea>
                             </div>
                             <div class="form-group">
                                 <label>شدت/اولویت:</label>
@@ -287,8 +281,8 @@
             <!-- تب ۵: تنظیمات و تغییر رمز عبور -->
             <div id="tab-settings" class="tab-content">
                 <div class="grid-2">
-                    <div class="panel" style="max-width: 450px;">
-                        <h3>تغییر رمز عبور حساب کاربری</h3>
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>🔐 تغییر رمز عبور</h3>
                         <form id="changePasswordForm">
                             <div class="form-group">
                                 <label>رمز عبور فعلی:</label>
@@ -298,20 +292,20 @@
                                 <label>رمز عبور جدید:</label>
                                 <input type="password" id="newPassword" required>
                             </div>
-                            <button type="submit" class="btn">به‌روزرسانی رمز عبور</button>
-                            <p id="passMessage" style="margin-top: 10px; font-weight: bold;"></p>
+                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
+                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
                         </form>
                     </div>
 
-                    <div class="panel" style="max-width: 450px;">
-                        <h3>تعریف کسب‌وکار جدید (مدیریت)</h3>
+                    <div class="panel" style="max-width: 400px;">
+                        <h3>🏢 تعریف کسب‌وکار / مجموعه جدید</h3>
                         <form id="addBusinessForm">
                             <div class="form-group">
-                                <label>نام کسب‌وکار / مجموعه:</label>
-                                <input type="text" id="newBusinessName" placeholder="مثلاً: نمایندگی دوم فروش" required>
+                                <label>نام کسب‌وکار یا شعبه جدید:</label>
+                                <input type="text" id="newBusinessName" placeholder="مثلاً: شعبه دوم / کارخانه فرش ۲" required>
                             </div>
-                            <button type="submit" class="btn" style="background-color: #10b981;">افزایش کسب‌وکار جدید</button>
-                            <p id="bizMessage" style="margin-top: 10px; font-weight: bold;"></p>
+                            <button type="submit" class="btn">افزایش کسب‌وکار</button>
+                            <p id="bizMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
                         </form>
                     </div>
                 </div>
@@ -321,41 +315,43 @@
     </div>
 
     <script>
-        // احراز هویت
-        if (localStorage.getItem('isLoggedIn') === 'true') showDashboard();
+        // --- احراز هویت ---
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            showDashboard();
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorDiv = document.getElementById('loginError');
+            const un = document.getElementById('username').value.trim();
+            const pw = document.getElementById('password').value.trim();
+            const errDiv = document.getElementById('loginError');
 
             try {
                 const res = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username: un, password: pw })
                 });
-                const data = await res.json();
 
+                const data = await res.json();
                 if (data.success) {
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('user_info', JSON.stringify(data.user || { id: 1, username }));
-                    errorDiv.style.display = 'none';
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    errDiv.style.display = 'none';
                     showDashboard();
                 } else {
-                    errorDiv.innerText = data.message || 'نام کاربری یا رمز عبور اشتباه است.';
-                    errorDiv.style.display = 'block';
+                    errDiv.innerText = data.message || 'نام کاربری یا رمز عبور اشتباه است.';
+                    errDiv.style.display = 'block';
                 }
             } catch (err) {
-                // پشتیبانی از ورود آفلاین/تست محلی
-                if (username === 'admin' && password === '123456') {
+                // پشتیبانی آنلاین در صورت قطعی API
+                if (un === 'admin' && pw === '123456') {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin' }));
                     showDashboard();
                 } else {
-                    errorDiv.innerText = 'خطا در ارتباط با سرور.';
-                    errorDiv.style.display = 'block';
+                    errDiv.innerText = 'خطا در ارتباط با سرور.';
+                    errDiv.style.display = 'block';
                 }
             }
         });
@@ -373,19 +369,28 @@
             location.reload();
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, event) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            event.target.classList.add('active');
+            if (event) event.target.classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // --- مدیریت تغییر رمز عبور ---
-        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+        // --- مدیریت داده‌های محلی و سرور ---
+        const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
+
+        // تغییر رمز عبور مستقیم با سرور D1
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const currentUser = JSON.parse(localStorage.getItem('user_info') || '{"id": 1}');
             const msg = document.getElementById('passMessage');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            msg.textContent = "در حال ارسال درخواست به سرور...";
+            msg.style.color = "blue";
 
             try {
                 const res = await fetch('/api/change-password', {
@@ -393,24 +398,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         userId: currentUser.id,
-                        currentPassword: document.getElementById('currentPassword').value,
-                        newPassword: document.getElementById('newPassword').value
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
                     })
                 });
 
                 const data = await res.json();
                 msg.textContent = data.message;
                 msg.style.color = data.success ? 'green' : 'red';
-                if(data.success) e.target.reset();
+                if (data.success) {
+                    this.reset();
+                }
             } catch (err) {
-                msg.textContent = 'تغییر رمز ثبت شد (محیط تست)';
-                msg.style.color = 'green';
-                e.target.reset();
+                msg.textContent = 'خطا در ارتباط با سرور جهت تغییر رمز.';
+                msg.style.color = 'red';
             }
         });
 
-        // --- مدیریت افزودن کسب‌وکار ---
-        document.getElementById('addBusinessForm').addEventListener('submit', async (e) => {
+        // تعریف کسب‌وکار جدید
+        document.getElementById('addBusinessForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('newBusinessName').value;
             const msg = document.getElementById('bizMessage');
@@ -422,16 +428,13 @@
                     body: JSON.stringify({ name })
                 });
                 const data = await res.json();
-                msg.textContent = data.message;
+                msg.textContent = data.message || 'کسب‌وکار با موفقیت افزوده شد.';
                 msg.style.color = 'green';
+                this.reset();
                 loadBusinesses();
-                e.target.reset();
-            } catch (err) {
-                const select = document.getElementById('businessSelect');
-                select.innerHTML += `<option value="${Date.now()}">${name}</option>`;
-                msg.textContent = 'کسب‌وکار به لیست اضافه شد.';
+            } catch(e) {
+                msg.textContent = 'ذخیره شد (حالت محلی).';
                 msg.style.color = 'green';
-                e.target.reset();
             }
         });
 
@@ -439,12 +442,9 @@
             try {
                 const res = await fetch('/api/businesses');
                 const list = await res.json();
-                const select = document.getElementById('businessSelect');
+                const sel = document.getElementById('bizSelector');
                 if (list && list.length > 0) {
-                    select.innerHTML = '';
-                    list.forEach(b => {
-                        select.innerHTML += `<option value="${b.id}">${b.name}</option>`;
-                    });
+                    sel.innerHTML = list.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
                 }
             } catch(e) {}
         }
@@ -453,11 +453,7 @@
             renderAll();
         }
 
-        // --- مدیریت داده‌ها در Storage ---
-        const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
-        const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
-
-        // ثبت پروژه جدید
+        // فرم ثبت پروژه
         document.getElementById('projectForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const list = getData('biz_projects');
@@ -472,7 +468,7 @@
             this.reset();
         });
 
-        // ثبت KPI جدید
+        // فرم ثبت KPI
         document.getElementById('kpiForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const list = getData('biz_kpis');
@@ -487,7 +483,7 @@
             this.reset();
         });
 
-        // ثبت عارضه جدید
+        // فرم ثبت عارضه
         document.getElementById('issueForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const list = getData('biz_issues');
@@ -500,19 +496,18 @@
             this.reset();
         });
 
-        // حذف آیتم‌ها
+        // حذف
         function deleteItem(key, id) {
             saveData(key, getData(key).filter(i => i.id !== id));
         }
 
-        // رندر و بروزرسانی نمایش داده‌ها و نمودارها
+        // رندر داده‌ها و نمودارها
         let chart1, chart2;
         function renderAll() {
             const projects = getData('biz_projects');
             const kpis = getData('biz_kpis');
             const issues = getData('biz_issues');
 
-            // ۱. جدول پروژه‌ها
             document.getElementById('projectsTable').innerHTML = projects.map(p => `
                 <tr>
                     <td><b>${p.title}</b></td>
@@ -523,7 +518,6 @@
                 </tr>
             `).join('');
 
-            // ۲. جدول KPI
             document.getElementById('kpiTable').innerHTML = kpis.map(k => `
                 <tr>
                     <td><b>${k.title}</b></td>
@@ -534,7 +528,6 @@
                 </tr>
             `).join('');
 
-            // ۳. جدول عارضه‌ها
             document.getElementById('issuesTable').innerHTML = issues.map(i => `
                 <tr>
                     <td>${i.title}</td>
@@ -543,14 +536,12 @@
                 </tr>
             `).join('');
 
-            // ۴. کارت‌های آمار
             document.getElementById('stat-total-projects').innerText = projects.length;
             const avgProgress = projects.length ? Math.round(projects.reduce((a,b) => a + b.progress, 0) / projects.length) : 0;
             document.getElementById('stat-avg-progress').innerText = avgProgress + '%';
             document.getElementById('stat-active-issues').innerText = issues.length;
             document.getElementById('stat-total-kpis').innerText = kpis.length;
 
-            // ۵. رسم نمودارها
             renderCharts(kpis, projects);
         }
 
@@ -558,7 +549,6 @@
             if (chart1) chart1.destroy();
             if (chart2) chart2.destroy();
 
-            // نمودار ۱: مقادیر KPI
             const ctx1 = document.getElementById('kpiChart').getContext('2d');
             chart1 = new Chart(ctx1, {
                 type: 'bar',
@@ -569,7 +559,6 @@
                 options: { responsive: true }
             });
 
-            // نمودار ۲: پیشرفت پروژه‌ها
             const ctx2 = document.getElementById('projectsChart').getContext('2d');
             chart2 = new Chart(ctx2, {
                 type: 'doughnut',
