@@ -3,22 +3,21 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // ایجاد خودکار جدول کاربران در صورت عدم وجود
+    // ساخت خودکار جدول کاربران
     async function initDB() {
       if (env.DB) {
         await env.DB.prepare(
-          'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT, role TEXT)'
+          'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, role TEXT)'
         ).run();
       }
     }
 
-    // ۱. مسیر ورود (Login)
+    // ۱. ورود کاربر (Login)
     if (path === '/api/login' && request.method === 'POST') {
       try {
         await initDB();
         const { username, password } = await request.json();
 
-        // الف) بررسی در دیتابیس D1
         if (env.DB) {
           const user = await env.DB.prepare('SELECT * FROM users WHERE username = ? AND password = ?')
             .bind(username, password).first();
@@ -32,7 +31,7 @@ export default {
           }
         }
 
-        // ب) رمز عبور اضطراری/پشتیبان (جهت جلوگیری از قفل شدن دسترسی)
+        // ورود اضطراری اولیه
         if (username === 'admin' && (password === '123456' || password === 'admin')) {
           return Response.json({
             success: true,
@@ -47,28 +46,52 @@ export default {
       }
     }
 
-    // ۲. مسیر تغییر رمز عبور (Change Password)
-    if (path === '/api/change-password' && request.method === 'POST') {
+    // ۲. تعریف کاربر جدید (Create User)
+    if (path === '/api/register' && request.method === 'POST') {
       try {
         await initDB();
-        const { userId, currentPassword, newPassword } = await request.json();
+        const { username, password, role } = await request.json();
 
         if (env.DB) {
-          // ثبت یا به‌روزرسانی کاربر admin در دیتابیس D1
-          await env.DB.prepare(
-            'INSERT INTO users (id, username, password, role) VALUES (1, "admin", ?, "admin") ON CONFLICT(id) DO UPDATE SET password = ?'
-          ).bind(newPassword, newPassword).run();
+          // بررسی تکراری نبودن نام کاربری
+          const existing = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind(username).first();
+          if (existing) {
+            return Response.json({ success: false, message: 'این نام کاربری قبلاً ثبت شده است.' }, { status: 400 });
+          }
 
-          return Response.json({ success: true, message: 'رمز عبور جدید با موفقیت در دیتابیس ذخیره شد.' });
+          // ذخیره کاربر جدید در D1
+          await env.DB.prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)')
+            .bind(username, password, role || 'user').run();
+
+          return Response.json({ success: true, message: `کاربر "${username}" با موفقیت تعریف شد.` });
         } else {
           return Response.json({ success: false, message: 'دیتابیس D1 متصل نیست.' }, { status: 500 });
         }
       } catch (e) {
-        return Response.json({ success: false, message: 'خطا در ویرایش رمز عبور در دیتابیس.' }, { status: 500 });
+        return Response.json({ success: false, message: 'خطا در ایجاد کاربر جدید.' }, { status: 500 });
       }
     }
 
-    // ۳. دریافت لیست کسب‌وکارها
+    // ۳. تغییر رمز عبور
+    if (path === '/api/change-password' && request.method === 'POST') {
+      try {
+        await initDB();
+        const { userId, newPassword } = await request.json();
+
+        if (env.DB) {
+          await env.DB.prepare(
+            'INSERT INTO users (id, username, password, role) VALUES (1, "admin", ?, "admin") ON CONFLICT(id) DO UPDATE SET password = ?'
+          ).bind(newPassword, newPassword).run();
+
+          return Response.json({ success: true, message: 'رمز عبور با موفقیت به‌روزرسانی شد.' });
+        }
+        return Response.json({ success: false, message: 'دیتابیس متصل نیست.' }, { status: 500 });
+      } catch (e) {
+        return Response.json({ success: false, message: 'خطا در تغییر رمز عبور.' }, { status: 500 });
+      }
+    }
+
+    // ۴. دریافت و ساخت کسب‌وکارها
     if (path === '/api/businesses' && request.method === 'GET') {
       try {
         const { results } = await env.DB.prepare('SELECT * FROM businesses').all();
@@ -78,7 +101,6 @@ export default {
       }
     }
 
-    // ۴. ساخت کسب‌وکار جدید
     if (path === '/api/businesses' && request.method === 'POST') {
       try {
         const { name } = await request.json();
@@ -89,7 +111,6 @@ export default {
       }
     }
 
-    // سرو کردن فایل‌های فرانت‌اند
     return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not Found', { status: 404 });
   }
 };
