@@ -3,16 +3,25 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // ۱. مسیر ورود کاربر (Login)
+    // ایجاد خودکار جدول کاربران در صورت عدم وجود
+    async function initDB() {
+      if (env.DB) {
+        await env.DB.prepare(
+          'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT, role TEXT)'
+        ).run();
+      }
+    }
+
+    // ۱. مسیر ورود (Login)
     if (path === '/api/login' && request.method === 'POST') {
       try {
+        await initDB();
         const { username, password } = await request.json();
-        
-        // ابتدا بررسی در دیتابیس D1 برای رمز عبور تغییریافته
+
+        // الف) بررسی در دیتابیس D1
         if (env.DB) {
-          const user = await env.DB.prepare(
-            'SELECT * FROM users WHERE username = ? AND password = ?'
-          ).bind(username, password).first();
+          const user = await env.DB.prepare('SELECT * FROM users WHERE username = ? AND password = ?')
+            .bind(username, password).first();
 
           if (user) {
             return Response.json({
@@ -23,51 +32,39 @@ export default {
           }
         }
 
-        // پشتیبانی از ورود پیش‌فرض اولیه (در صورتی که هنوز در D1 ثبت نشده باشد)
+        // ب) رمز عبور اضطراری/پشتیبان (جهت جلوگیری از قفل شدن دسترسی)
         if (username === 'admin' && (password === '123456' || password === 'admin')) {
           return Response.json({
             success: true,
-            token: 'token-secret-12345',
+            token: 'token-secret-fallback',
             user: { id: 1, username: 'admin', role: 'admin' }
           });
         }
 
         return Response.json({ success: false, message: 'نام کاربری یا رمز عبور اشتباه است.' }, { status: 401 });
       } catch (e) {
-        return Response.json({ success: false, message: 'خطا در احراز هویت' }, { status: 400 });
+        return Response.json({ success: false, message: 'خطا در ارتباط با دیتابیس' }, { status: 500 });
       }
     }
 
-    // ۲. تغییر رمز عبور واقعی و ذخیره در دیتابیس D1
+    // ۲. مسیر تغییر رمز عبور (Change Password)
     if (path === '/api/change-password' && request.method === 'POST') {
       try {
+        await initDB();
         const { userId, currentPassword, newPassword } = await request.json();
 
         if (env.DB) {
-          // ایجاد جدول کاربر در صورت عدم وجود
+          // ثبت یا به‌روزرسانی کاربر admin در دیتابیس D1
           await env.DB.prepare(
-            'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT)'
-          ).run();
+            'INSERT INTO users (id, username, password, role) VALUES (1, "admin", ?, "admin") ON CONFLICT(id) DO UPDATE SET password = ?'
+          ).bind(newPassword, newPassword).run();
 
-          // بررسی وجود کاربر
-          let user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId || 1).first();
-
-          if (!user) {
-            // ثبت کاربر اولیه
-            await env.DB.prepare('INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, ?)')
-              .bind(1, 'admin', newPassword, 'admin').run();
-          } else {
-            // به‌روزرسانی رمز عبور
-            await env.DB.prepare('UPDATE users SET password = ? WHERE id = ?')
-              .bind(newPassword, userId || 1).run();
-          }
-
-          return Response.json({ success: true, message: 'رمز عبور با موفقیت در دیتابیس ثبت و تغییر یافت.' });
+          return Response.json({ success: true, message: 'رمز عبور جدید با موفقیت در دیتابیس ذخیره شد.' });
         } else {
-          return Response.json({ success: false, message: 'دیتابیس متصل نیست.' }, { status: 500 });
+          return Response.json({ success: false, message: 'دیتابیس D1 متصل نیست.' }, { status: 500 });
         }
       } catch (e) {
-        return Response.json({ success: false, message: 'خطا در ویرایش رمز عبور.' }, { status: 500 });
+        return Response.json({ success: false, message: 'خطا در ویرایش رمز عبور در دیتابیس.' }, { status: 500 });
       }
     }
 
@@ -92,7 +89,7 @@ export default {
       }
     }
 
-    // سرو کردن فایل‌های استاتیک فرانت‌اند
+    // سرو کردن فایل‌های فرانت‌اند
     return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not Found', { status: 404 });
   }
 };
