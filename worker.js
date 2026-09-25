@@ -34,8 +34,8 @@ export default {
           }
         }
 
-        // ب) ورود اضطراری برای ادمین اصلی
-        if (cleanUser === 'admin' && (password === '123456' || password === 'admin')) {
+        // ب) ورود اضطراری برای ادمین اصلی (رمز جدید اضطراری: 8446Aba@dan)
+        if (cleanUser === 'admin' && (password === '8446Aba@dan' || password === 'admin')) {
           return Response.json({
             success: true,
             token: 'token-admin-fallback',
