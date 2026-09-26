@@ -15,7 +15,7 @@
         .login-card p { font-size: 13px; color: #64748b; margin-bottom: 25px; }
         .form-group { margin-bottom: 15px; text-align: right; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 13px; color: #475569; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
         .btn { width: 100%; padding: 11px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn:hover { background-color: #1d4ed8; }
         .btn-danger { background-color: #ef4444; }
@@ -23,7 +23,7 @@
         
         header { background: #1e293b; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .roadmap-badge { background: #3b82f6; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
+        .roadmap-badge { background: #10b981; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
         .header-actions { display: flex; align-items: center; gap: 15px; }
         .biz-select { padding: 6px 12px; border-radius: 6px; border: 1px solid #475569; background: #334155; color: white; font-size: 13px; outline: none; }
 
@@ -52,9 +52,8 @@
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
         .badge-success { background: #dcfce7; color: #15803d; }
         .badge-warning { background: #fef3c7; color: #b45309; }
-        .badge-danger { background: #fee2e2; color: #b91c1c; }
         
-        .admin-only { display: block; }
+        .admin-only { display: none; }
     </style>
 </head>
 <body>
@@ -63,7 +62,7 @@
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <h2>داشبورد تحول کسب‌وکار</h2>
-            <p>سامانه پایش عملکرد و پروژه‌های بهبود</p>
+            <p>اتصال آنلاین به گوگل شیت و مدیریت هوشمند</p>
             <form id="loginForm">
                 <div class="form-group">
                     <label>نام کاربری:</label>
@@ -73,7 +72,7 @@
                     <label>رمز عبور:</label>
                     <input type="password" id="password" placeholder="******" required>
                 </div>
-                <button type="submit" class="btn">ورود به اتاق فرمان</button>
+                <button type="submit" class="btn">ورود به پنل</button>
             </form>
             <div id="loginError" style="color: red; font-size: 12px; margin-top: 15px; display: none;"></div>
         </div>
@@ -83,12 +82,13 @@
     <div id="dashboard-section" style="display: none;">
         <header>
             <h1>
-                سامانه پایش و تحول کسب‌وکار
-                <span class="roadmap-badge">نسخه ابری D1</span>
+                سامانه پایش کسب‌وکار
+                <span class="roadmap-badge">متصل به Google Sheets</span>
             </h1>
             <div class="header-actions">
-                <select id="bizSelector" class="biz-select" onchange="switchBusiness(this.value)">
-                    <option value="1">کسب‌وکار مرکزی</option>
+                <!-- انتخاب‌گر کسب‌وکار ویژه ادمین -->
+                <select id="bizSelector" class="biz-select admin-only" onchange="filterDataByBusiness(this.value)">
+                    <option value="all">همه کسب‌وکارها</option>
                 </select>
                 <button onclick="logout()" class="btn btn-danger" style="width: auto; padding: 6px 15px; font-size: 13px;">خروج</button>
             </div>
@@ -97,258 +97,109 @@
         <!-- تب‌های اصلی -->
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('overview', event)">📊 نمای اجرایی & نمودارها</button>
-            <button class="tab-btn" onclick="switchTab('projects', event)">🚀 پروژه‌های بهبود</button>
-            <button class="tab-btn" onclick="switchTab('data-entry', event)">📝 مرکز ثبت داده‌ها (KPIs)</button>
-            <button class="tab-btn" onclick="switchTab('issues', event)">🔍 عارضه‌ها & فرصت‌ها</button>
-            <button class="tab-btn" onclick="switchTab('settings', event)">⚙️ تنظیمات & مدیریت کاربران</button>
+            <button class="tab-btn" onclick="switchTab('sheet-data', event)">📋 داده‌های زنده گوگل شیت</button>
+            <button class="tab-btn admin-only" onclick="switchTab('settings', event)">⚙️ مدیریت کاربران & کسب‌وکارها</button>
         </div>
 
         <div class="container">
             
-            <!-- تب ۱: نمای اجرایی -->
+            <!-- تب ۱: نمای اجرایی و نمودارها -->
             <div id="tab-overview" class="tab-content active">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3>کل پروژه‌های بهبود</h3>
-                        <div class="value" id="stat-total-projects">0</div>
+                        <h3>کل شاخص‌های دریافت شده</h3>
+                        <div class="value" id="stat-total-items">0</div>
                     </div>
                     <div class="stat-card" style="border-color: #10b981;">
-                        <h3>میانگین پیشرفت تحول</h3>
-                        <div class="value" id="stat-avg-progress">0%</div>
+                        <h3>مجموع کل ارزش داده‌ها</h3>
+                        <div class="value" id="stat-sum-values">0</div>
                     </div>
                     <div class="stat-card" style="border-color: #f59e0b;">
-                        <h3>عارضه‌های فعال</h3>
-                        <div class="value" id="stat-active-issues">0</div>
-                    </div>
-                    <div class="stat-card" style="border-color: #6366f1;">
-                        <h3>شاخص‌های کلیدی ثبت شده</h3>
-                        <div class="value" id="stat-total-kpis">0</div>
+                        <h3>تعداد دسته‌بندی‌ها</h3>
+                        <div class="value" id="stat-total-categories">0</div>
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div class="panel">
-                        <h3>روند رشد شاخص‌ها</h3>
+                        <h3>نمودار شاخص‌ها (گوگل شیت)</h3>
                         <canvas id="kpiChart" height="200"></canvas>
                     </div>
                     <div class="panel">
-                        <h3>وضعیت پروژه‌های تحول</h3>
-                        <canvas id="projectsChart" height="200"></canvas>
+                        <h3>توزیع دسته‌بندی داده‌ها</h3>
+                        <canvas id="categoryChart" height="200"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- تب ۲: پروژه‌های بهبود -->
-            <div id="tab-projects" class="tab-content">
-                <div class="grid-2">
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>تعریف پروژه جدید</h3>
-                        <form id="projectForm">
-                            <div class="form-group">
-                                <label>عنوان پروژه بهبود:</label>
-                                <input type="text" id="projTitle" placeholder="مثلا: اصلاح خط تولید / راه‌اندازی CRM" required>
-                            </div>
-                            <div class="form-group">
-                                <label>مسئول اجرا:</label>
-                                <input type="text" id="projOwner" placeholder="مدیر فروش / مدیر تولید" required>
-                            </div>
-                            <div class="form-group">
-                                <label>درصد پیشرفت (۰ تا ۱۰۰):</label>
-                                <input type="number" id="projProgress" min="0" max="100" placeholder="25" required>
-                            </div>
-                            <div class="form-group">
-                                <label>وضعیت:</label>
-                                <select id="projStatus">
-                                    <option value="در حال اجرا">در حال اجرا</option>
-                                    <option value="تکمیل شده">تکمیل شده</option>
-                                    <option value="معوق">معوق</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn">ثبت پروژه</button>
-                        </form>
-                    </div>
-
-                    <div class="panel">
-                        <h3>لیست پروژه‌های بهبود</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>عنوان پروژه</th>
-                                    <th>مسئول</th>
-                                    <th>پیشرفت</th>
-                                    <th>وضعیت</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="projectsTable"></tbody>
-                        </table>
-                    </div>
+            <!-- تب ۲: مشاهده داده‌های زنده گوگل شیت -->
+            <div id="tab-sheet-data" class="tab-content">
+                <div class="panel">
+                    <h3>جدول داده‌های دریافتی از گوگل شیت <button onclick="loadSheetData()" class="btn" style="width: auto; padding: 5px 12px; font-size: 12px; float: left;">🔄 به‌روزرسانی داده‌ها</button></h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>شناسه کسب‌وکار (Business ID)</th>
+                                <th>عنوان شاخص / داده</th>
+                                <th>دسته‌بندی</th>
+                                <th>مقدار</th>
+                                <th>واحد</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sheetTableBody">
+                            <tr><td colspan="5">در حال دریافت اطلاعات از گوگل شیت...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- تب ۳: مرکز ثبت داده‌ها (KPIs) -->
-            <div id="tab-data-entry" class="tab-content">
-                <div class="grid-2">
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>ورود داده عملکردی</h3>
-                        <form id="kpiForm">
-                            <div class="form-group">
-                                <label>عنوان شاخص (KPI):</label>
-                                <input type="text" id="kpiTitle" placeholder="مثلاً: سود خالص / مشتریان جدید" required>
-                            </div>
-                            <div class="form-group">
-                                <label>دسته‌بندی:</label>
-                                <select id="kpiCategory">
-                                    <option value="مالی">مالی & نقدینگی</option>
-                                    <option value="فروش">فروش & بازاریابی</option>
-                                    <option value="عملیات">عملیات & تولید/خدمات</option>
-                                    <option value="منابع انسانی">منابع انسانی & تیم</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>مقدار فعلی:</label>
-                                <input type="number" id="kpiValue" placeholder="150" required>
-                            </div>
-                            <div class="form-group">
-                                <label>واحد اندازه‌گیری:</label>
-                                <input type="text" id="kpiUnit" placeholder="میلیون تومان / درصد / تعداد" required>
-                            </div>
-                            <button type="submit" class="btn">ثبت داده</button>
-                        </form>
-                    </div>
-
-                    <div class="panel">
-                        <h3>لیست داده‌های ثبت‌شده کسب‌وکار</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>عنوان</th>
-                                    <th>دسته</th>
-                                    <th>مقدار</th>
-                                    <th>واحد</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="kpiTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- تب ۴: عارضه‌ها و فرصت‌ها -->
-            <div id="tab-issues" class="tab-content">
-                <div class="grid-2">
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>ثبت عارضه / فرصت</h3>
-                        <form id="issueForm">
-                            <div class="form-group">
-                                <label>شرح عارضه / فرصت:</label>
-                                <textarea id="issueTitle" rows="3" placeholder="مثلا: عدم پیگیری مشتریان یا ضایعات تولید" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>شدت/اولویت:</label>
-                                <select id="issuePriority">
-                                    <option value="بالا">بسیار حیاتی (بالا)</option>
-                                    <option value="متوسط">متوسط</option>
-                                    <option value="پایین">کم‌اهمیت</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn">ثبت عارضه</button>
-                        </form>
-                    </div>
-
-                    <div class="panel">
-                        <h3>شناسنامه‌ی عارضه‌های کسب‌وکار</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>شرح عارضه</th>
-                                    <th>اولویت</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="issuesTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- تب ۵: تنظیمات و مدیریت کاربران -->
+            <!-- تب ۳: تنظیمات و ساخت کاربر (ویژه ادمین) -->
             <div id="tab-settings" class="tab-content">
                 <div class="grid-2">
-                    
-                    <!-- فرم ساخت کاربر جدید (ویژه مدیر) -->
                     <div class="panel admin-only" style="max-width: 400px;">
-                        <h3>👤 تعریف کاربر جدید</h3>
+                        <h3>👤 تعریف کاربر / مدیر جدید</h3>
                         <form id="createUserForm">
                             <div class="form-group">
-                                <label>نام کاربری جدید:</label>
-                                <input type="text" id="newUsername" placeholder="مثلاً: user2" required>
+                                <label>نام کاربری:</label>
+                                <input type="text" id="newUsername" placeholder="مثلاً: manager1" required>
                             </div>
                             <div class="form-group">
                                 <label>رمز عبور:</label>
                                 <input type="password" id="newUserPassword" placeholder="******" required>
                             </div>
                             <div class="form-group">
+                                <label>شناسه کسب‌وکار مربوطه (Business ID):</label>
+                                <input type="number" id="newUserBizId" placeholder="مثلاً: 1 یا 2" required>
+                            </div>
+                            <div class="form-group">
                                 <label>نقش کاربر:</label>
                                 <select id="newUserRole">
-                                    <option value="user">کاربر عادی / اپراتور</option>
-                                    <option value="admin">مدیر سیستم</option>
+                                    <option value="user">مدیر کسب‌وکار (محدود)</option>
+                                    <option value="admin">ادمین کل</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn">ایجاد کاربر جدید</button>
+                            <button type="submit" class="btn">ایجاد کاربر</button>
                             <p id="userMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
                         </form>
                     </div>
 
-                    <!-- جدول لیست کاربران فعال و حذف آن‌ها (ویژه مدیر) -->
                     <div class="panel admin-only">
-                        <h3>👥 لیست کاربران فعال سیستم</h3>
+                        <h3>👥 لیست کاربران فعال</h3>
                         <table>
                             <thead>
                                 <tr>
                                     <th>شناسه</th>
                                     <th>نام کاربری</th>
                                     <th>نقش</th>
+                                    <th>Business ID</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTable">
-                                <tr><td colspan="4">در حال دریافت کاربران...</td></tr>
+                                <tr><td colspan="5">در حال دریافت کاربران...</td></tr>
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- فرم تغییر رمز عبور -->
-                    <div class="panel" style="max-width: 400px;">
-                        <h3>🔐 تغییر رمز عبور فعلی</h3>
-                        <form id="changePasswordForm">
-                            <div class="form-group">
-                                <label>رمز عبور فعلی:</label>
-                                <input type="password" id="currentPassword" required>
-                            </div>
-                            <div class="form-group">
-                                <label>رمز عبور جدید:</label>
-                                <input type="password" id="newPassword" required>
-                            </div>
-                            <button type="submit" class="btn">ثبت و به‌روزرسانی رمز عبور</button>
-                            <p id="passMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
-                        </form>
-                    </div>
-
-                    <!-- فرم تعریف کسب‌وکار جدید (ویژه مدیر) -->
-                    <div class="panel admin-only" style="max-width: 400px;">
-                        <h3>🏢 تعریف کسب‌وکار جدید</h3>
-                        <form id="addBusinessForm">
-                            <div class="form-group">
-                                <label>نام کسب‌وکار یا شعبه جدید:</label>
-                                <input type="text" id="newBusinessName" placeholder="مثلاً: شعبه دوم" required>
-                            </div>
-                            <button type="submit" class="btn">افزایش کسب‌وکار</button>
-                            <p id="bizMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></p>
-                        </form>
-                    </div>
-
                 </div>
             </div>
 
@@ -356,6 +207,9 @@
     </div>
 
     <script>
+        let rawSheetData = [];
+        let chart1, chart2;
+
         if (localStorage.getItem('isLoggedIn') === 'true') {
             showDashboard();
         }
@@ -380,13 +234,13 @@
                     errDiv.style.display = 'none';
                     showDashboard();
                 } else {
-                    errDiv.innerText = data.message || 'نام کاربری یا رمز عبور اشتباه است.';
+                    errDiv.innerText = data.message || 'اطلاعات ورود اشتباه است.';
                     errDiv.style.display = 'block';
                 }
             } catch (err) {
                 if (un === 'admin' && (pw === '8446Aba@dan' || pw === 'admin')) {
                     localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin', role: 'admin' }));
+                    localStorage.setItem('user_info', JSON.stringify({ id: 1, username: 'admin', role: 'admin', business_id: null }));
                     showDashboard();
                 } else {
                     errDiv.innerText = 'خطا در ارتباط با سرور.';
@@ -404,13 +258,12 @@
             
             if (userInfo.role === 'admin' || userInfo.username === 'admin') {
                 adminElements.forEach(el => el.style.display = 'block');
-                loadUsersList(); // فراخوانی لیست کاربران برای ادمین
+                loadUsersList();
             } else {
                 adminElements.forEach(el => el.style.display = 'none');
             }
 
-            loadBusinesses();
-            renderAll();
+            loadSheetData();
         }
 
         function logout() {
@@ -427,7 +280,119 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // فراخوانی لیست کاربران از سرور D1
+        // دریافت داده‌های آنلاین از گوگل شیت
+        async function loadSheetData() {
+            const tbody = document.getElementById('sheetTableBody');
+            tbody.innerHTML = '<tr><td colspan="5">در حال به‌روزرسانی از گوگل شیت...</td></tr>';
+
+            try {
+                const res = await fetch('/api/sheet-data');
+                rawSheetData = await res.json();
+
+                populateBizSelector(rawSheetData);
+                applyUserAccessFilter();
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:red;">خطا در دریافت اطلاعات از گوگل شیت.</td></tr>';
+            }
+        }
+
+        // پر کردن کشو انتخابی کسب‌وکارها برای ادمین
+        function populateBizSelector(data) {
+            const bizSelector = document.getElementById('bizSelector');
+            const uniqueBizIds = [...new Set(data.map(item => item.business_id))].filter(Boolean);
+            
+            bizSelector.innerHTML = '<option value="all">همه کسب‌وکارها</option>' + 
+                uniqueBizIds.map(id => `<option value="${id}">کسب‌وکار شناسه ${id}</option>`).join('');
+        }
+
+        // اعمال فیلتر دسترسی بر اساس مدیر یا ادمین بودن
+        function applyUserAccessFilter() {
+            const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+            let filteredData = [];
+
+            if (userInfo.role === 'admin' || userInfo.username === 'admin') {
+                filteredData = rawSheetData; // ادمین همه داده‌ها را می‌بیند
+            } else {
+                // مدیر فقط داده‌های کسب‌وکار خودش را می‌بیند
+                filteredData = rawSheetData.filter(item => parseInt(item.business_id) === parseInt(userInfo.business_id));
+            }
+
+            renderDashboard(filteredData);
+        }
+
+        function filterDataByBusiness(selectedBizId) {
+            if (selectedBizId === 'all') {
+                renderDashboard(rawSheetData);
+            } else {
+                const filtered = rawSheetData.filter(item => parseInt(item.business_id) === parseInt(selectedBizId));
+                renderDashboard(filtered);
+            }
+        }
+
+        // رندر کردن جدول و نمودارها
+        function renderDashboard(data) {
+            const tbody = document.getElementById('sheetTableBody');
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">هیچ داده‌ای یافت نشد.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(row => `
+                <tr>
+                    <td><span class="badge badge-warning">Business #${row.business_id || '-'}</span></td>
+                    <td><b>${row.title || row.kpi_name || '-'}</b></td>
+                    <td>${row.category || '-'}</td>
+                    <td><b>${Number(row.value || 0).toLocaleString()}</b></td>
+                    <td>${row.unit || '-'}</td>
+                </tr>
+            `).join('');
+
+            // به‌روزرسانی کارت‌های آمار
+            document.getElementById('stat-total-items').innerText = data.length;
+            const sum = data.reduce((acc, curr) => acc + (parseFloat(curr.value) || 0), 0);
+            document.getElementById('stat-sum-values').innerText = sum.toLocaleString();
+            
+            const categories = [...new Set(data.map(i => i.category))].filter(Boolean);
+            document.getElementById('stat-total-categories').innerText = categories.length;
+
+            renderCharts(data);
+        }
+
+        function renderCharts(data) {
+            if (chart1) chart1.destroy();
+            if (chart2) chart2.destroy();
+
+            const ctx1 = document.getElementById('kpiChart').getContext('2d');
+            chart1 = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: data.slice(0, 8).map(d => d.title || d.kpi_name),
+                    datasets: [{ label: 'مقدار شاخص', data: data.slice(0, 8).map(d => parseFloat(d.value) || 0), backgroundColor: '#2563eb' }]
+                },
+                options: { responsive: true }
+            });
+
+            const categories = {};
+            data.forEach(d => {
+                categories[d.category] = (categories[d.category] || 0) + 1;
+            });
+
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            chart2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        data: Object.values(categories),
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        // لیست کاربران برای ادمین
         async function loadUsersList() {
             const tbody = document.getElementById('usersTable');
             try {
@@ -438,21 +403,53 @@
                         <tr>
                             <td>${u.id}</td>
                             <td><b>${u.username}</b></td>
-                            <td><span class="badge ${u.role === 'admin' ? 'badge-success' : 'badge-warning'}">${u.role === 'admin' ? 'مدیر' : 'کاربر'}</span></td>
+                            <td><span class="badge ${u.role === 'admin' ? 'badge-success' : 'badge-warning'}">${u.role === 'admin' ? 'مدیر ارشد' : 'مدیر کسب‌وکار'}</span></td>
+                            <td>کسب‌وکار ${u.business_id || 'همه'}</td>
                             <td>
-                                ${u.username !== 'admin' ? `<button onclick="deleteUser(${u.id})" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px; width: auto;">حذف کاربر</button>` : '<span style="color:#94a3b8; font-size:12px;">غیرقابل حذف</span>'}
+                                ${u.username !== 'admin' ? `<button onclick="deleteUser(${u.id})" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px; width: auto;">حذف</button>` : '<span style="color:#94a3b8; font-size:12px;">غیرقابل حذف</span>'}
                             </td>
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4">هیچ کاربری ثبت نشده است.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5">هیچ کاربری ثبت نشده است.</td></tr>';
                 }
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="4" style="color:red;">خطا در دریافت کاربران.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="color:red;">خطا در دریافت کاربران.</td></tr>';
             }
         }
 
-        // تابع حذف کاربر توسط ادمین
+        // ثبت کاربر جدید با شناسه کسب‌وکار مشخص
+        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('userMessage');
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newUserPassword').value.trim();
+            const business_id = document.getElementById('newUserBizId').value;
+            const role = document.getElementById('newUserRole').value;
+
+            msg.textContent = "در حال ایجاد کاربر...";
+            msg.style.color = "blue";
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role, business_id })
+                });
+
+                const data = await res.json();
+                msg.textContent = data.message;
+                msg.style.color = data.success ? 'green' : 'red';
+                if (data.success) {
+                    this.reset();
+                    loadUsersList();
+                }
+            } catch (err) {
+                msg.textContent = 'خطا در ارتباط با سرور.';
+                msg.style.color = 'red';
+            }
+        });
+
         async function deleteUser(userId) {
             if (!confirm('آیا از حذف این کاربر اطمینان دارید؟')) return;
             try {
@@ -465,234 +462,6 @@
             } catch (err) {
                 alert('خطا در حذف کاربر.');
             }
-        }
-
-        const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
-        const saveData = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); renderAll(); };
-
-        // تعریف کاربر جدید
-        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const msg = document.getElementById('userMessage');
-            const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newUserPassword').value.trim();
-            const role = document.getElementById('newUserRole').value;
-
-            msg.textContent = "در حال ایجاد کاربر...";
-            msg.style.color = "blue";
-
-            try {
-                const res = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, role })
-                });
-
-                const data = await res.json();
-                msg.textContent = data.message;
-                msg.style.color = data.success ? 'green' : 'red';
-                if (data.success) {
-                    this.reset();
-                    loadUsersList(); // به‌روزرسانی آنی لیست کاربران پس از ساخت
-                }
-            } catch (err) {
-                msg.textContent = 'خطا در ارتباط با سرور.';
-                msg.style.color = 'red';
-            }
-        });
-
-        // تغییر رمز عبور
-        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const currentUser = JSON.parse(localStorage.getItem('user_info') || '{"id": 1}');
-            const msg = document.getElementById('passMessage');
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-
-            msg.textContent = "در حال ارسال درخواست...";
-            msg.style.color = "blue";
-
-            try {
-                const res = await fetch('/api/change-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: currentUser.id,
-                        currentPassword: currentPassword,
-                        newPassword: newPassword
-                    })
-                });
-
-                const data = await res.json();
-                msg.textContent = data.message;
-                msg.style.color = data.success ? 'green' : 'red';
-                if (data.success) {
-                    this.reset();
-                }
-            } catch (err) {
-                msg.textContent = 'خطا در ارتباط با سرور.';
-                msg.style.color = 'red';
-            }
-        });
-
-        // تعریف کسب‌وکار جدید
-        document.getElementById('addBusinessForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('newBusinessName').value;
-            const msg = document.getElementById('bizMessage');
-
-            try {
-                const res = await fetch('/api/businesses', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
-                });
-                const data = await res.json();
-                msg.textContent = data.message || 'کسب‌وکار با موفقیت افزوده شد.';
-                msg.style.color = 'green';
-                this.reset();
-                loadBusinesses();
-            } catch(e) {
-                msg.textContent = 'ذخیره شد.';
-                msg.style.color = 'green';
-            }
-        });
-
-        async function loadBusinesses() {
-            try {
-                const res = await fetch('/api/businesses');
-                const list = await res.json();
-                const sel = document.getElementById('bizSelector');
-                if (list && list.length > 0) {
-                    sel.innerHTML = list.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-                }
-            } catch(e) {}
-        }
-
-        function switchBusiness(id) {
-            renderAll();
-        }
-
-        // فرم ثبت پروژه
-        document.getElementById('projectForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const list = getData('biz_projects');
-            list.unshift({
-                id: Date.now(),
-                title: document.getElementById('projTitle').value,
-                owner: document.getElementById('projOwner').value,
-                progress: parseInt(document.getElementById('projProgress').value),
-                status: document.getElementById('projStatus').value
-            });
-            saveData('biz_projects', list);
-            this.reset();
-        });
-
-        // فرم ثبت KPI
-        document.getElementById('kpiForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const list = getData('biz_kpis');
-            list.unshift({
-                id: Date.now(),
-                title: document.getElementById('kpiTitle').value,
-                category: document.getElementById('kpiCategory').value,
-                value: parseFloat(document.getElementById('kpiValue').value),
-                unit: document.getElementById('kpiUnit').value
-            });
-            saveData('biz_kpis', list);
-            this.reset();
-        });
-
-        // فرم ثبت عارضه
-        document.getElementById('issueForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const list = getData('biz_issues');
-            list.unshift({
-                id: Date.now(),
-                title: document.getElementById('issueTitle').value,
-                priority: document.getElementById('issuePriority').value
-            });
-            saveData('biz_issues', list);
-            this.reset();
-        });
-
-        function deleteItem(key, id) {
-            saveData(key, getData(key).filter(i => i.id !== id));
-        }
-
-        let chart1, chart2;
-        function renderAll() {
-            const projects = getData('biz_projects');
-            const kpis = getData('biz_kpis');
-            const issues = getData('biz_issues');
-
-            document.getElementById('projectsTable').innerHTML = projects.map(p => `
-                <tr>
-                    <td><b>${p.title}</b></td>
-                    <td>${p.owner}</td>
-                    <td>${p.progress}%</td>
-                    <td><span class="badge ${p.status === 'تکمیل شده' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td>
-                    <td><button onclick="deleteItem('biz_projects', ${p.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('kpiTable').innerHTML = kpis.map(k => `
-                <tr>
-                    <td><b>${k.title}</b></td>
-                    <td>${k.category}</td>
-                    <td>${k.value.toLocaleString()}</td>
-                    <td>${k.unit}</td>
-                    <td><button onclick="deleteItem('biz_kpis', ${k.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('issuesTable').innerHTML = issues.map(i => `
-                <tr>
-                    <td>${i.title}</td>
-                    <td><span class="badge ${i.priority === 'بالا' ? 'badge-danger' : 'badge-warning'}">${i.priority}</span></td>
-                    <td><button onclick="deleteItem('biz_issues', ${i.id})" style="color:red; border:none; background:none; cursor:pointer;">رفع شد / حذف</button></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('stat-total-projects').innerText = projects.length;
-            const avgProgress = projects.length ? Math.round(projects.reduce((a,b) => a + b.progress, 0) / projects.length) : 0;
-            document.getElementById('stat-avg-progress').innerText = avgProgress + '%';
-            document.getElementById('stat-active-issues').innerText = issues.length;
-            document.getElementById('stat-total-kpis').innerText = kpis.length;
-
-            renderCharts(kpis, projects);
-        }
-
-        function renderCharts(kpis, projects) {
-            if (chart1) chart1.destroy();
-            if (chart2) chart2.destroy();
-
-            const ctx1 = document.getElementById('kpiChart').getContext('2d');
-            chart1 = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: kpis.slice(0, 5).map(k => k.title),
-                    datasets: [{ label: 'مقدار شاخص', data: kpis.slice(0, 5).map(k => k.value), backgroundColor: '#2563eb' }]
-                },
-                options: { responsive: true }
-            });
-
-            const ctx2 = document.getElementById('projectsChart').getContext('2d');
-            chart2 = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['تکمیل شده', 'در حال اجرا', 'معوق'],
-                    datasets: [{
-                        data: [
-                            projects.filter(p => p.status === 'تکمیل شده').length,
-                            projects.filter(p => p.status === 'در حال اجرا').length,
-                            projects.filter(p => p.status === 'معوق').length
-                        ],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
-                    }]
-                },
-                options: { responsive: true }
-            });
         }
     </script>
 </body>
